@@ -69,7 +69,6 @@ def fluxo_metricas (financeiro:Financeiro) -> None:
         printar_valores_categorias(total_categoria)
         despesastr, enfeite1,quantidade1 = "DESPESA", "-", 92
         saldostr, enfeite1,quantidade1 =  "SALDO", "-", 92
-        print(f"{saldostr:-^92}")
         printar_cabecalho_solto(saldostr,enfeite1,quantidade1)
         printar_max_transacao_saldo(maior_s)
         printar_cabecalho_solto(despesastr,enfeite1,quantidade1)
@@ -81,11 +80,10 @@ def fluxo_metricas (financeiro:Financeiro) -> None:
 
 
 def fluxo_remover_transacao (financeiro:Financeiro) -> None:
-    id_removed = inputar_id()
     printar_cancelamento()
+    id_removed = inputar_id()
     confirmação = financeiro.remover_transacao(id_removed)
     if confirmação:
-        pritar_opcoes_categorias()
         financeiro.salvar_arquivo()
         printar_ação_validada()
     else:
@@ -94,8 +92,8 @@ def fluxo_remover_transacao (financeiro:Financeiro) -> None:
 
 
 def fluxo_corrigir_transacao (financeiro:Financeiro) -> None:
-    corrigir_id = inputar_id()
     printar_cancelamento()
+    corrigir_id = inputar_id()
     transacao : Transacao = financeiro.buscar_transacao(corrigir_id)
     if transacao:
         capturar_transacao(transacao)
