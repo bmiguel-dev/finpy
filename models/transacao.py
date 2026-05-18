@@ -63,20 +63,21 @@ class Transacao:
             raise TypeError ("Coloque uma descrição")
         self._descricao = nova_descricao
     
-    def fazer_dict (self):
+    def fazer_dict (self) -> tuple[int,dict]:
         data_formatada = datetime.strftime(self.data, "%d/%m/%Y")
-        return {'id': self._id, 'categoria':self._categoria.name, 'descricao':self.descricao,'valor':self.valor,'data':data_formatada}
+        id = self._id
+        return id ,{ 'categoria':self._categoria.name, 'descricao':self.descricao,'valor':self.valor,'data':data_formatada}
 
     @classmethod
-    def fazer_classe ( cls, transacao:dict) -> Transacao:
+    def fazer_classe ( cls, transacao:tuple[str,dict]) -> Transacao:
+        id_ = transacao[0]
+        data_obj = datetime.strptime(transacao[1]['data'], "%d/%m/%Y").date()
+        categoria_validada = Categoria[transacao[1].get('categoria')]
 
-        data_obj = datetime.strptime(transacao['data'], "%d/%m/%Y").date()
-        categoria_validada = Categoria[transacao.get('categoria')]
-
-        return cls(id_transacao=transacao.get('id'),
+        return cls(id_transacao=int(id_),
         categoria_value=categoria_validada,
-        descricao=transacao.get('descricao'),
-        valor=transacao.get('valor'),
+        descricao=transacao[1].get('descricao'),
+        valor=transacao[1].get('valor'),
         data=data_obj)
     
     def __str__(self) -> str:
