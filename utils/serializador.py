@@ -2,11 +2,7 @@ from models import Transacao
 
 
 def passar_json_pro_financeiro (lista_transacao: dict[dict]) -> list[Transacao]:
-     lista_final = []
-     for t in lista_transacao.items():
-          transacao = Transacao.fazer_classe(t)
-          lista_final.append(transacao)
-
+     lista_final = [Transacao.fazer_classe(t) for t in lista_transacao.items()]
      return  lista_final
      
      

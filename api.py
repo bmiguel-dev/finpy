@@ -1,7 +1,16 @@
 from fastapi import FastAPI
+from services import Financeiro
+from utils import passar_financeiro_pro_json
 
 app = FastAPI()
-transacao = [{'id': 1, 'categoria':2, 'descricao':"vasco",'valor':100,'data':'15/10/2007'}]
+financeiro = Financeiro ()
+
 @app.get("/")
-def home (id_transacao):
+def home ():
     return {"status_code": "Está rodando!"}
+
+@app.get("/transacoes")
+def transacoes ():
+    lista_transacao = passar_financeiro_pro_json()
+    return lista_transacao
+
