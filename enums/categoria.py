@@ -8,6 +8,6 @@ class Categoria(Enum):
     INFRAESTRUTURA = 5
 
     @classmethod
-    def validacao_categoria(cls, categoria_input:list[int]) -> list[Categoria]:
+    def validacao_categoria(cls, categoria_input:list[int]) -> list['Categoria']:
         return [cls(c) for c in categoria_input if c in cls ]
             

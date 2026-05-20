@@ -69,7 +69,7 @@ class Transacao:
         return id ,{ 'categoria':self._categoria.name, 'descricao':self.descricao,'valor':self.valor,'data':data_formatada}
 
     @classmethod
-    def fazer_classe ( cls, transacao:tuple[str,dict]) -> Transacao:
+    def fazer_classe ( cls, transacao:tuple[str,dict]) -> 'Transacao':
         id_ = transacao[0]
         data_obj = datetime.strptime(transacao[1]['data'], "%d/%m/%Y").date()
         categoria_validada = Categoria[transacao[1].get('categoria')]
