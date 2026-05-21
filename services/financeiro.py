@@ -33,18 +33,32 @@ class Financeiro:
                 return True
         return False
     
-        
-    
+
+    def lista_filtro_api (self,filtro_id:list[int] | None =None, filtro_cat:list[int] | None = None, filtro_dat_1:datetime | None =None,filtro_dat_2:datetime | None =None) -> list[Transacao]:
+        if filtro_id:
+            lista_filtrada = [t for t in self._lista_transacao if t.id in filtro_id ]  
+            return lista_filtrada if lista_filtrada else None
+        lista_filtrada = self._lista_transacao
+        if filtro_cat:
+            lista_filtrada = [t for t in lista_filtrada if t.categoria.value in filtro_cat]
+        if filtro_dat_1:
+            lista_filtrada = [t for t in lista_filtrada if  filtro_dat_1 <= t.data ]
+        if filtro_dat_2:
+            lista_filtrada = [t for t in lista_filtrada if  t.data <= filtro_dat_2 ]
+        return lista_filtrada 
     
     def lista_filtro (self,filtro_id:list[int] | None =None, filtro_cat:list[str] | None = None, filtro_dat_1:datetime | None =None,filtro_dat_2:datetime | None =None) -> list[Transacao]:
         if filtro_id:
-            return [t for t in self._lista_transacao if t.id in filtro_id ] if filtro_id else self._lista_transacao
+            lista_filtrada = [t for t in self._lista_transacao if t.id in filtro_id ]  
+            return lista_filtrada if lista_filtrada else None
         lista_filtrada = self._lista_transacao
         if filtro_cat:
             lista_filtrada = [t for t in lista_filtrada if t.categoria in filtro_cat]
-        if filtro_dat_1 and filtro_dat_2:
-            lista_filtrada = [t for t in lista_filtrada if  filtro_dat_1 <= t.data <= filtro_dat_2 ]
-        return lista_filtrada
+        if filtro_dat_1:
+            lista_filtrada = [t for t in lista_filtrada if  filtro_dat_1 <= t.data ]
+        if filtro_dat_2:
+            lista_filtrada = [t for t in lista_filtrada if  t.data <= filtro_dat_2 ]
+        return lista_filtrada 
 
     def dados_relatorio (self,lista_filtrada=None) -> list[Transacao]:
         return self._lista_transacao if lista_filtrada is None else lista_filtrada

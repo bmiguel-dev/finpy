@@ -77,7 +77,10 @@ def printar_max_transacao_saldo (maior_saldo:Transacao) -> None:
                print(f"Categoria da transação com maior valor foi {maior_saldo.categoria.name:<18} com um valor de R${maior_saldo.valor:>10.2f} ")
      elif maior_saldo is None:
           print("Não há transações com saldo positivo.")
-
+          
+def printar_não_existe_transacoes ():
+     print("Não há transações com essas características ")
+     
 def printar_max_transacao_despesa (maior_despesa:Transacao) -> None:
      if maior_despesa:
           print(f"Categoria da transação com maior valor foi {maior_despesa.categoria.name:<18} com um valor de R${maior_despesa.valor:>10.2f} ")

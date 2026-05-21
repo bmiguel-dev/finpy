@@ -30,6 +30,7 @@ def fluxo_filtro (financeiro:Financeiro) -> None:
     instrucao_str = "INSTRUÇÕES"
     printar_cabecalho(instrucao_str,enfeite_padrao, tamanho_padrao)
     printar_instrucao_filtro()
+    inputar_retornar()
     if filtro_opcao == 'S':
         ids_brutos = []
         multiplas_escolhas(inputar_id,ids_brutos)
@@ -38,7 +39,12 @@ def fluxo_filtro (financeiro:Financeiro) -> None:
         transacoes_filtradas = financeiro.lista_filtro(ids_brutos)
         titulo_transacoes = "TRANSAÇÕES"
         printar_cabecalho(titulo_transacoes, enfeite_padrao, tamanho_str_transacao) 
-        printar_lista(transacoes_filtradas)
+        if transacoes_filtradas:
+            printar_lista(transacoes_filtradas)
+        else:
+            printar_não_existe_transacoes ()
+     
+     
     elif filtro_opcao == 'N':
         titulo_categoria = "CATEGORIAS"
         printar_cabecalho(titulo_categoria,enfeite_padrao,tamanho_padrao)
@@ -52,11 +58,15 @@ def fluxo_filtro (financeiro:Financeiro) -> None:
         transacoes_filtradas = financeiro.lista_filtro(filtro_id = None, filtro_cat=Categoria.validacao_categoria(categorias_brutas), filtro_dat_1=data_input,filtro_dat_2= data_input_2)
         limpar_tela()       
         titulo_transacoes = "TRANSAÇÕES"
-        printar_cabecalho(titulo_transacoes, enfeite_padrao, tamanho_str_transacao)                       
-        printar_lista(transacoes_filtradas)                                 
-        total_categoria: list[tuple[Categoria,int]]= financeiro.total_categorias(transacoes_filtradas)
-        printar_cabecalho_solto(mesage=None,enfeite="-", quantidade=tamanho_str_transacao)
-        printar_valores_categorias(total_categoria) 
+        printar_cabecalho(titulo_transacoes, enfeite_padrao, tamanho_str_transacao)     
+        if transacoes_filtradas:                  
+            printar_lista(transacoes_filtradas)                                 
+            total_categoria: list[tuple[Categoria,int]]= financeiro.total_categorias(transacoes_filtradas)
+            printar_cabecalho_solto(mesage=None,enfeite="-", quantidade=tamanho_str_transacao)
+            printar_valores_categorias(total_categoria) 
+        else:
+            printar_não_existe_transacoes ()
+
     inputar_retornar()
 
 def fluxo_metricas (financeiro:Financeiro) -> None:
