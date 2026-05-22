@@ -26,14 +26,17 @@ class Financeiro:
         self._lista_transacao.append(transacao)
         
     
-    def remover_transacao(self, id_removido) -> bool:
+    def remover_transacao(self, id_removido:int) -> bool:
         for i,t in enumerate(self._lista_transacao): 
             if t.id == id_removido:
                 del self._lista_transacao[i]
                 return True
         return False
     
-
+    def procurar_id (self, id_variable:int) -> Transacao:
+        id_encontrado = next((t for t in self._lista_transacao if t.id == id_variable), None)
+        return id_encontrado
+    
     def lista_filtro_api (self, filtro_cat:list[int] | None = None, filtro_dat_1:datetime | None =None,filtro_dat_2:datetime | None =None) -> list[Transacao]:
         lista_filtrada = self._lista_transacao
         if filtro_cat:
