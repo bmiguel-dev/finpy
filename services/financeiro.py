@@ -34,10 +34,7 @@ class Financeiro:
         return False
     
 
-    def lista_filtro_api (self,filtro_id:list[int] | None =None, filtro_cat:list[int] | None = None, filtro_dat_1:datetime | None =None,filtro_dat_2:datetime | None =None) -> list[Transacao]:
-        if filtro_id:
-            lista_filtrada = [t for t in self._lista_transacao if t.id in filtro_id ]  
-            return lista_filtrada if lista_filtrada else None
+    def lista_filtro_api (self, filtro_cat:list[int] | None = None, filtro_dat_1:datetime | None =None,filtro_dat_2:datetime | None =None) -> list[Transacao]:
         lista_filtrada = self._lista_transacao
         if filtro_cat:
             lista_filtrada = [t for t in lista_filtrada if t.categoria.value in filtro_cat]
