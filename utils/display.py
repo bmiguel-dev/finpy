@@ -120,12 +120,11 @@ def pritar_opcoes_categorias () -> None:
           print(f"{cat.value} - {cat.name}")
 
 def printar_cancelamento() -> None:
-     print("--------------------------------")
-     print("|Você pode cancelar apertando 0|")
-     print("--------------------------------")
+     print("Você pode cancelar apertando 0")
+     print("-" * 39)
 
 
-def  printar_digite_data1 () -> None:
+def  printar_digita_data1 () -> None:
      print("Digite a primeira data.")
 
 def printar_digita_data2 () -> None:
@@ -196,7 +195,7 @@ def inputar_descricao () ->str:
 
 
 def inputar_retornar() -> str:
-     return input("Aperte ENTER para retornar:")
+     return input("Aperte ENTER para avançar:")
 
 def inputar_fazer_escolha () -> str:
      return input( "Qual ação você deseja escolher?\n->")

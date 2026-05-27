@@ -16,7 +16,8 @@ def fluxo_cadastro (financeiro:Financeiro) -> None:
     inputar_retornar()
 
 def fluxo_imprimir_relatorio (financeiro:Financeiro) -> None:
-    tamanho_str_transacao = 114
+    limpar_tela() 
+    tamanho_str_transacao = 128
     titulo_relatorio, enfeite = "RELATÓRIO IMPRESSO","="
     printar_cabecalho(titulo_relatorio,enfeite,tamanho_str_transacao)
     lista_para_imprimir = financeiro.lista_transacao
@@ -24,7 +25,8 @@ def fluxo_imprimir_relatorio (financeiro:Financeiro) -> None:
     inputar_retornar()
 
 def fluxo_filtro (financeiro:Financeiro) -> None:
-    tamanho_str_transacao = 114
+    limpar_tela()
+    tamanho_str_transacao = 128
     filtro_opcao = inputar_opcao_id()
     enfeite_padrao, tamanho_padrao = "=", 81
     instrucao_str = "INSTRUÇÕES"
@@ -35,7 +37,7 @@ def fluxo_filtro (financeiro:Financeiro) -> None:
         ids_brutos = []
         multiplas_escolhas(inputar_id,ids_brutos)
         printar_cabecalho_solto(mesage=None, enfeite="-" ,quantidade=tamanho_str_transacao) 
-        limpar_tela()                              
+        limpar_tela()                         
         transacoes_filtradas = financeiro.lista_filtro(ids_brutos)
         titulo_transacoes = "TRANSAÇÕES"
         printar_cabecalho(titulo_transacoes, enfeite_padrao, tamanho_str_transacao) 
@@ -51,12 +53,11 @@ def fluxo_filtro (financeiro:Financeiro) -> None:
         pritar_opcoes_categorias()
         categorias_brutas = []
         multiplas_escolhas(inputar_categoria,categorias_brutas)                               
-        printar_digita_data2
+        printar_digita_data1()
         data_input = inputar_data()
-        printar_digita_data2 
+        printar_digita_data2() 
         data_input_2 = inputar_data()                                
-        transacoes_filtradas = financeiro.lista_filtro(filtro_id = None, filtro_cat=Categoria.validacao_categoria(categorias_brutas), filtro_dat_1=data_input,filtro_dat_2= data_input_2)
-        limpar_tela()       
+        transacoes_filtradas = financeiro.lista_filtro(filtro_id = None, filtro_cat=Categoria.validacao_categoria(categorias_brutas), filtro_dat_1=data_input,filtro_dat_2= data_input_2)    
         titulo_transacoes = "TRANSAÇÕES"
         printar_cabecalho(titulo_transacoes, enfeite_padrao, tamanho_str_transacao)     
         if transacoes_filtradas:                  
@@ -70,6 +71,7 @@ def fluxo_filtro (financeiro:Financeiro) -> None:
     inputar_retornar()
 
 def fluxo_metricas (financeiro:Financeiro) -> None:
+    limpar_tela()
     total_categoria = financeiro.total_categorias(financeiro.lista_transacao) 
     if total_categoria:
         s, d, t = financeiro.metrica(total_categoria) 
@@ -90,6 +92,9 @@ def fluxo_metricas (financeiro:Financeiro) -> None:
 
 
 def fluxo_remover_transacao (financeiro:Financeiro) -> None:
+    limpar_tela()
+    remover_id_str, enfeite, quantidade = "REMOVER TRANSAÇÃO", "-", 39
+    printar_cabecalho(remover_id_str, enfeite, quantidade)
     printar_cancelamento()
     id_removed = inputar_id()
     confirmação = financeiro.remover_transacao(id_removed)
@@ -102,10 +107,14 @@ def fluxo_remover_transacao (financeiro:Financeiro) -> None:
 
 
 def fluxo_corrigir_transacao (financeiro:Financeiro) -> None:
+    limpar_tela()
+    corrigir_transacao_str, enfeite, quantidade = "CORRIGIR TRANSAÇÃO", "-", 39
+    printar_cabecalho(corrigir_transacao_str, enfeite, quantidade)
     printar_cancelamento()
     corrigir_id = inputar_id()
     transacao : Transacao = financeiro.buscar_transacao(corrigir_id)
     if transacao:
+        pritar_opcoes_categorias()
         capturar_transacao(transacao)
         financeiro.salvar_arquivo()
         printar_ação_validada()

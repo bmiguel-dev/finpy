@@ -48,7 +48,7 @@ class Transacao:
      
     @valor.setter
     def valor (self, novo_valor):   
-        if novo_valor:
+        if novo_valor is not None:
                 valorabs = abs(novo_valor)
                 if self._categoria.value >= 5:
                     self._valor = -valorabs 
@@ -81,5 +81,5 @@ class Transacao:
         data=data_obj)
     
     def __str__(self) -> str:
-        return f"ID: {self.id:>3} | CATEGORIA: {self._categoria.name:<16} | DESCRIÇÃO: {self.descricao:<20} | VALOR: R${self.valor:>11.2f} | DATA: {self.data.strftime("%d/%m/%Y")}"
+        return f"ID: {self.id:>3} | CATEGORIA: {self._categoria.name:<16} | DESCRIÇÃO: {self.descricao:<35} | VALOR: R${self.valor:>11.2f} | DATA: {self.data.strftime("%d/%m/%Y")}"
     

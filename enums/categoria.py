@@ -3,7 +3,7 @@ from enum import Enum
 class Categoria(Enum):
     RECEITAS = 1
     CONSULTORIA = 2
-    MANUTEÇÃO = 3 
+    MANUTENÇÃO = 3 
     DESENVOLVIMENTO = 4
     INFRAESTRUTURA = 5
 

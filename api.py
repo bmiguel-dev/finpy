@@ -1,18 +1,33 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query,HTTPException, Response
 from services import Financeiro
 from utils import capturar_transacao, passar_financeiro_pro_json,json_para_datetime
 from models import Transacao
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+
+
+
 financeiro = Financeiro ()
 app = FastAPI()
-
-class Transacoes (BaseModel):
+class ResponseTransacoes (BaseModel): 
+    _id :int
     valor: float
     categoria: int
     descricao: str
     data: str
+
+class CriarTransacoes (BaseModel):
+    valor: float
+    categoria: int
+    descricao: str
+    data: str
+
+class CorrigirTransacoes (BaseModel):
+    valor: float | None = None
+    categoria: int | None = None
+    descricao: str | None = None 
+    data: str | None = None
 
 @app.get("/")
 def home ():
@@ -26,36 +41,53 @@ def transacoes ( categoria : Optional[list[int]] = Query(None,alias= "cat", titl
     if lista_transacoes:
         return passar_financeiro_pro_json(lista_transacoes)
     else:
-        return {"mensage" : "Não achou a transação com essas características."}
+        raise HTTPException(status_code=404, detail= "Transação não encontrada.")
 
 @app.get("/transacoes/{id_}")
-def transacoes (id_:str):
+def transacao_por_id (id_:int):
     financeiro.carregar_arquivo()
-    lista_transacoes = financeiro.procurar_id(int(id_)) 
-    if lista_transacoes:
-        return passar_financeiro_pro_json([lista_transacoes])
-    else:
-        return {"mensage" : "Não achou a transacão com esse ID."}
+    lista_transacoes = financeiro.buscar_transacao(id_) 
+    if not lista_transacoes:
+        raise HTTPException(status_code=404, detail= "Transação não encontrada.") 
+    return passar_financeiro_pro_json([lista_transacoes])
+    
 
 
-@app.post("/transacoes/new")
-def criar_transacao (transacoes: Transacoes):
-    date_obj = datetime.strptime(transacoes.data, "%d/%m/%Y").date()
-    t = Transacao(descricao=transacoes.descricao, valor=transacoes.valor, data=date_obj)
-    t.categoria = transacoes.categoria
-    financeiro.adicionar_transacao(t)
-    financeiro.salvar_arquivo()
-    return {"status_code": "Transação criada com sucesso!"}
-
-@app.delete("/transacoes/{id_}")
-def deletar_transacoes (id_:str):
-    financeiro.carregar_arquivo()
-    confirmacao = financeiro.remover_transacao(int(id_))
-    if confirmacao:
+@app.post("/transacoes/new",status_code=201)
+def criar_transacao (transacoes: CriarTransacoes):
+    try:
+        date_obj = datetime.strptime(transacoes.data, "%d/%m/%Y").date()
+        t = Transacao(descricao=transacoes.descricao, valor=transacoes.valor, data=date_obj)
+        t.categoria = transacoes.categoria
+        financeiro.adicionar_transacao(t)
         financeiro.salvar_arquivo()
-        return {"mensage" : "Transação removida."}
-    else:
-        return {"mensage" : "Não achou a transacão com esse ID."}
+        return {"mensage": "Transação criada com sucesso."}
+    except:
+        raise HTTPException(status_code=400, description= "Entrada inválida.")
 
-
+@app.delete("/transacoes/{id_}", status_code = 204)
+def deletar_transacoes (id_:int):
+    financeiro.carregar_arquivo()
+    confirmacao = financeiro.remover_transacao(id_)
+    if not confirmacao:
+        raise HTTPException(status_code=404, detail= "Transação não encontrada.")
+    financeiro.salvar_arquivo()
+    return Response(status_code=204)
+    
+@app.patch("/transacoes/{id_}", status_code= 200)
+def corrigir_transacao (id_:int, dados: CorrigirTransacoes):
+    financeiro.carregar_arquivo()
+    id_confirmada = financeiro.buscar_transacao(id_)
+    if not id_confirmada:
+        raise HTTPException(status_code= 404, detail = "Transação não encontrada.")
+    if  dados.categoria is not None:
+        id_confirmada.categoria = dados.categoria
+    if  dados.valor is not None:
+        id_confirmada.valor = dados.valor
+    if dados.descricao is not None:
+        id_confirmada.descricao = dados.descricao
+    if dados.data is not None:
+        id_confirmada.data = dados.data
+    financeiro.salvar_arquivo()
+    return {"mensage": "Transação corrigida com sucesso"}
 
