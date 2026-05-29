@@ -3,7 +3,7 @@ from services import Financeiro
 from utils import capturar_transacao, passar_financeiro_pro_json,json_para_datetime
 from models import Transacao
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime,date
 from typing import Optional
 
 
@@ -63,7 +63,7 @@ def criar_transacao (transacoes: CriarTransacoes):
         financeiro.salvar_arquivo()
         return {"mensage": "Transação criada com sucesso."}
     except:
-        raise HTTPException(status_code=400, description= "Entrada inválida.")
+        raise HTTPException(status_code=400, detail= "Entrada inválida.")
 
 @app.delete("/transacoes/{id_}", status_code = 204)
 def deletar_transacoes (id_:int):
@@ -80,14 +80,15 @@ def corrigir_transacao (id_:int, dados: CorrigirTransacoes):
     id_confirmada = financeiro.buscar_transacao(id_)
     if not id_confirmada:
         raise HTTPException(status_code= 404, detail = "Transação não encontrada.")
-    if  dados.categoria is not None:
-        id_confirmada.categoria = dados.categoria
-    if  dados.valor is not None:
-        id_confirmada.valor = dados.valor
-    if dados.descricao is not None:
-        id_confirmada.descricao = dados.descricao
-    if dados.data is not None:
-        id_confirmada.data = dados.data
+    dados_dict = dados.model_dump(exclude_none=True)
+    if 'data' in dados_dict:
+        try:
+            d1, _ = json_para_datetime(dados_dict["data"])
+            dados_dict['data'] = d1
+        except:
+            raise HTTPException(status_code= 400, detail= "Formato da data errado, o esperado: DD/MM/YYYY")
+    for atributo, valor in dados_dict.items():
+        setattr(id_confirmada[0], atributo, valor )
     financeiro.salvar_arquivo()
-    return {"mensage": "Transação corrigida com sucesso"}
+    return {"message": "Transação corrigida com sucesso"}
 
