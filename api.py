@@ -57,8 +57,6 @@ def transacao_por_id (id_:int):
 def criar_transacao (transacoes: CriarTransacoes):
     try:
         date_obj = datetime.strptime(transacoes.data, "%d/%m/%Y").date()
-        t = Transacao(descricao=transacoes.descricao, valor=transacoes.valor, data=date_obj)
-        t.categoria = transacoes.categoria
         financeiro.adicionar_transacao(t)
         financeiro.salvar_arquivo()
         return {"mensage": "Transação criada com sucesso."}
@@ -77,7 +75,7 @@ def deletar_transacoes (id_:int):
 @app.patch("/transacoes/{id_}", status_code= 200)
 def corrigir_transacao (id_:int, dados: CorrigirTransacoes):
     financeiro.carregar_arquivo()
-    id_confirmada = financeiro.buscar_transacao(id_)
+    id_confirmada = financeiro.buscar_transacao(id_) #retorna uma transacao
     if not id_confirmada:
         raise HTTPException(status_code= 404, detail = "Transação não encontrada.")
     dados_dict = dados.model_dump(exclude_none=True)
@@ -88,7 +86,7 @@ def corrigir_transacao (id_:int, dados: CorrigirTransacoes):
         except:
             raise HTTPException(status_code= 400, detail= "Formato da data errado, o esperado: DD/MM/YYYY")
     for atributo, valor in dados_dict.items():
-        setattr(id_confirmada[0], atributo, valor )
+        setattr(id_confirmada, atributo, valor )
     financeiro.salvar_arquivo()
     return {"message": "Transação corrigida com sucesso"}
 
