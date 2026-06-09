@@ -2,11 +2,13 @@ from models.transacao import Transacao, Categoria
 from datetime import datetime
 import json
 from utils import passar_json_pro_financeiro, passar_financeiro_pro_json
+import sqlite3
 
 class Financeiro:
+   
     def __init__(self):
         self._lista_transacao:list[Transacao] = []
-        self.carregar_arquivo()
+        
 
     
     @property
