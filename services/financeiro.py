@@ -3,7 +3,8 @@ from datetime import datetime
 import json
 from utils import passar_json_pro_financeiro, passar_financeiro_pro_json
 import sqlite3
-
+from api import ResponseTransacoes, CriarTransacoes, CorrigirTransacoes
+from database import conect_bd
 class Financeiro:
    
     def __init__(self):
@@ -23,52 +24,64 @@ class Financeiro:
             return 1
 
     
-    def adicionar_transacao(self, transacao:Transacao ) -> None:
-        transacao._id = self.gerador_id()
-        self._lista_transacao.append(transacao)
-        
-    
-    def remover_transacao(self, id_removido:int) -> bool:
-        for i,t in enumerate(self._lista_transacao): 
-            if t.id == id_removido:
-                del self._lista_transacao[i]
-                return True
-        return False
-    
-    def lista_filtro_api (self, filtro_cat:list[int] | None = None, filtro_dat_1:datetime | None =None,filtro_dat_2:datetime | None =None) -> list[Transacao]:
-        lista_filtrada = self._lista_transacao
-        if filtro_cat:
-            lista_filtrada = [t for t in lista_filtrada if t.categoria.value in filtro_cat]
-        if filtro_dat_1:
-            lista_filtrada = [t for t in lista_filtrada if  filtro_dat_1 <= t.data ]
-        if filtro_dat_2:
-            lista_filtrada = [t for t in lista_filtrada if  t.data <= filtro_dat_2 ]
-        return lista_filtrada 
-    
-    def lista_filtro (self,filtro_id:list[int] | None =None, filtro_cat:list[str] | None = None, filtro_dat_1:datetime | None =None,filtro_dat_2:datetime | None =None) -> list[Transacao]:
-        if filtro_id:
-            lista_filtrada = [t for t in self._lista_transacao if t.id in filtro_id ]  
-            return lista_filtrada if lista_filtrada else None
-        lista_filtrada = self._lista_transacao
-        if filtro_cat:
-            lista_filtrada = [t for t in lista_filtrada if t.categoria in filtro_cat]
-        if filtro_dat_1:
-            lista_filtrada = [t for t in lista_filtrada if  filtro_dat_1 <= t.data ]
-        if filtro_dat_2:
-            lista_filtrada = [t for t in lista_filtrada if  t.data <= filtro_dat_2 ]
-        return lista_filtrada 
+    def adict_transaction (self, entrada_dado : CriarTransacoes ):
+        with conect_bd() as banco:
+            cursor = banco.cursor()
+            cursor.execute('''INSERT INTO transacoes (categoria_id, valor, descricao, data)
+                            VALUES (:categoria_id,:valor,:descricao,:data) ''', entrada_dado.model_dump())
+            banco.commit()
+            
+    def remove_transaction (self, id:int):
+        with conect_bd() as banco:
+            cursor = banco.cursor()
+            cursor.execute('''DELETE FROM transacoes WHERE id = ?''', [id])
+            banco.commit()
 
-    def dados_relatorio (self,lista_filtrada=None) -> list[Transacao]:
-        return self._lista_transacao if lista_filtrada is None else lista_filtrada
+    def search_by_id (self,id:int) -> sqlite3.Row | None:
+        with conect_bd() as banco:
+            cursor = banco.cursor() 
+            cursor.execute('''SELECT transacoes.* , categorias.nome FROM transacoes 
+                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id
+                            WHERE transacoes.id = ?
+                            ''', [id])
+            dado = cursor.fetchone()
+            return dado
+        
+    def search_by_cat(self, categoria : int) -> list[sqlite3.Row]:
+        with conect_bd() as banco:
+            cursor = banco.cursor() 
+            cursor.execute('''SELECT transacoes.* , categorias.nome FROM transacoes 
+                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id
+                            WHERE categoria_id = ?
+                            ''', [categoria])
+            dado = cursor.fetchall()
+            return dado
+
+    def search_by_date (self, data1, data2) ->  list[sqlite3.Row]:
+        with conect_bd() as banco:
+            cursor = banco.cursor() 
+            cursor.execute('''SELECT transacoes.* , categorias.nome FROM transacoes 
+                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id
+                            WHERE transacoes.data BETWEEN ? AND ?
+                            ''', (data1, data2))
+            dado = cursor.fetchall()
+            return dado
+
+  
     
-    def total_categorias (self,lista_transacao:list[Transacao]) -> list[tuple[Categoria,float]]:
-        categorias_valores = {}
-        for t in lista_transacao:
-            categoria  = t.categoria
-            valor = t.valor 
-            valor_atual = categorias_valores.get(categoria, 0.0)
-            categorias_valores[categoria] = valor_atual + valor
-        return list(categorias_valores.items())
+
+    
+    
+    def all_cat_values (self):
+        with conect_bd() as banco:
+            cursor = banco.cursor() 
+            cursor.execute('''SELECT SUM(transacoes.valor) AS total_valores, categorias.nome AS nome_categoria
+                              FROM transacoes JOIN categorias ON transacoes.categoria_id = categorias.id
+                              GROUP BY categorias.nome''')
+            dados = cursor.fetchall()
+            return dados
+    
+    
     
     def metrica (self, total_categorias_: dict) -> tuple[float,float,float]:
         lista_totais = total_categorias_

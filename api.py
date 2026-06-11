@@ -19,7 +19,7 @@ class ResponseTransacoes (BaseModel):
 
 class CriarTransacoes (BaseModel):
     valor: float
-    categoria: int
+    categoria_id: int
     descricao: str
     data: str
 
