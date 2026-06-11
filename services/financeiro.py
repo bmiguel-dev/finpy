@@ -74,11 +74,11 @@ class Financeiro:
             dados = cursor.fetchall()
             return dados
     
-    def get_balance_and_expense (self) -> sqlite3.Row:
+    def get_balance_and_expense (self) -> sqlite3.Row | None:
         with conect_bd() as banco:  
             cursor = banco.cursor()
             cursor.execute('''SELECT SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END) AS saldo_total,
-                            SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END) AS despesa_total 
+                            SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END) AS despesa_total, 
                            (SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END) - 
                             SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END)) AS total_liquido
                             FROM transacoes
@@ -87,7 +87,7 @@ class Financeiro:
             dados = cursor.fetchone()
             return dados
     
-    def max_value_cat (self) -> tuple[sqlite3.Row,sqlite3.Row]:
+    def max_value_cat (self) -> tuple[sqlite3.Row,sqlite3.Row] | None :
         with conect_bd() as banco:  
             cursor = banco.cursor()
             cursor.execute('''SELECT transacoes.valor, categorias.nome FROM transacoes
@@ -109,7 +109,7 @@ class Financeiro:
         with conect_bd() as banco:  
             cursor = banco.cursor()
             cursor.execute('''SELECT transacoes.* , categoria.nome  FROM transacoes
-                           INNER JOIN categorias ON transacoes.categorias_id = categorias.id
+                           INNER JOIN categorias ON transacoes.categoria_id = categorias.id
                            ORDER BY transacoes.data DESC''')
             dados = cursor.fetchall()
             return dados   
