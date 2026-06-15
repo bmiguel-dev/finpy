@@ -1,14 +1,16 @@
 from fastapi import FastAPI, Query,HTTPException, Response
 from services import Financeiro
-from utils import capturar_transacao, passar_financeiro_pro_json,json_para_datetime
+from utils import capturar_transacao, passar_financeiro_pro_json,date_isoformat
 from models import Transacao
-from pydantic import BaseModel
+from pydantic import BaseModel,field_validator
+
 from datetime import datetime,date
 from typing import Optional
+from database import *
 
 
 
-financeiro = Financeiro ()
+financeiro = Financeiro (conexão_banco= conect_db)
 app = FastAPI()
 class ResponseTransacoes (BaseModel): 
     _id :int
@@ -29,15 +31,20 @@ class CorrigirTransacoes (BaseModel):
     descricao: str | None = None 
     data: str | None = None
 
+class FiltrarTransacoes (BaseModel):
+    categoria_filtro : list[int] | None = None
+    d_inicio : str | None = None
+    d_fim : str | None = None
+
 @app.get("/")
 def home ():
     return {"status_code": "Está rodando!"}
 
 @app.get("/transacoes")
-def transacoes ( categoria : Optional[list[int]] = Query(None,alias= "cat", title = "categoria", description = "Passa os números das categorias para filtrar, apenas números", example = [1,3,4]) ,data_1 : Optional[str] = None, data_2:Optional[str] = None):
-    d1, d2 = json_para_datetime(data_1,data_2)
-    financeiro.carregar_arquivo()
-    lista_transacoes = financeiro.lista_filtro_api(categoria,d1,d2)
+def transacoes ( filtro : FiltrarTransacoes = Query(None, title = "Filtro", 
+                    description= " Schema para receber os dados e caso esses dados forem enviados, o filtro ocorra")) :
+    
+    
     if lista_transacoes:
         return passar_financeiro_pro_json(lista_transacoes)
     else:

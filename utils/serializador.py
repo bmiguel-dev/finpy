@@ -47,3 +47,11 @@ def criate_table_transactions():
                                                                       descricao TEXT NOT NULL)
                          FOREIGN KEY categoria_id REFERENCES categorias(id)''')
           banco.commit()
+
+
+def date_isoformat (d1:Optional[str] = None, d2:Optional[str] = None) -> tuple[str, str] | None:
+     if d1 and d2:
+          d1 = datetime.strptime(d1, "%d/%m/%Y").date().isoformat() 
+          d2 = datetime.strptime(d2, "%d/%m/%Y").date().isoformat() 
+          return d1, d2
+     return None, None
