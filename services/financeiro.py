@@ -73,7 +73,7 @@ class Financeiro:
             cursor = banco.cursor()
             cursor.execute('''SELECT transacoes.* , categorias.nome FROM transacoes
                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id
-                           WHERE transacoes.categoria_id = ?''', [id_] )
+                           WHERE transacoes.id = ?''', [id_] )
             dado = cursor.fetchone()
             return dado 
     
@@ -100,32 +100,7 @@ class Financeiro:
             dados = cursor.fetchone()
             return dados
     
-    def max_value_cat (self) -> tuple[sqlite3.Row,sqlite3.Row] | None :
-        with self.conectar_banco() as banco:  
-            cursor = banco.cursor()
-            cursor.execute('''SELECT transacoes.valor, categorias.nome FROM transacoes
-                           INNER JOIN categorias ON transacoes.categoria_id = categorias.id
-                           WHERE categorias.tipo = 1
-                           ORDER BY transacoes.valor DESC
-                           LIMIT 1''' )
-            dados_saldo = cursor.fetchone()
-            cursor.execute('''SELECT transacoes.valor, categorias.nome FROM transacoes
-                           INNER JOIN categorias ON transacoes.categoria_id = categorias.id
-                           WHERE categorias.tipo = 2
-                           ORDER BY transacoes.valor DESC
-                           LIMIT 1
-                           ''')
-            dados_despesa = cursor.fetchone()
-            return dados_saldo, dados_despesa
         
-    def get_all (self) -> list[sqlite3.Row]: 
-        with self.conectar_banco() as banco:  
-            cursor = banco.cursor()
-            cursor.execute('''SELECT transacoes.* , categoria.nome  FROM transacoes
-                           INNER JOIN categorias ON transacoes.categoria_id = categorias.id
-                           ORDER BY transacoes.data DESC''')
-            dados = cursor.fetchall()
-            return dados   
  
     def correct_transaction (self, id_, dados : CorrigirTransacoes):
         dados_dict = {chave:valor for chave,valor in  dados.model_dump().items() if valor is not None}
@@ -133,7 +108,7 @@ class Financeiro:
         parametros = []
         parametros.extend(list(dados_dict.values()))
         parametros.append(id_)
-        query = f"UPDATE transacoes SET {place_holder} WHERE id = ?"
+        query = f"UPDATE transacoes SET {place_holder} WHERE transacoes.id = ?"
         with self.conectar_banco() as banco: 
             cursor = banco.cursor()
             cursor.execute(query,parametros)

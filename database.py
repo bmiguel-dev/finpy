@@ -29,4 +29,3 @@ def create_table_transactions(bd:Callable[None , ]):
                             FOREIGN KEY (categoria_id) REFERENCES categorias(id))''')
         banco.commit() 
 
-def inicializar

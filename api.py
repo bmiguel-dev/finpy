@@ -36,6 +36,19 @@ class FiltrarTransacoes (BaseModel):
     d_inicio : str | None = None
     d_fim : str | None = None
 
+class CategoriaTotal(BaseModel):
+    total_valores : int
+    nome_categoria : str
+
+class Metricas (BaseModel):
+    saldo_total  : int
+    despesa_total : int
+    total_liquido : int
+
+class ResponseMetricas(BaseModel):
+    categoria_total : list[CategoriaTotal]
+    metricas_ = Metricas
+
 @app.get("/")
 def home ():
     return {"status_code": "Está rodando!"}
@@ -65,19 +78,11 @@ def deletar_transacoes (id_:int):
     
 @app.patch("/transacoes/{id_}", status_code= 200)
 def corrigir_transacao (id_:int, dados: CorrigirTransacoes):
-    financeiro.carregar_arquivo()
-    id_confirmada = financeiro.buscar_transacao(id_) #retorna uma transacao
-    if not id_confirmada:
-        raise HTTPException(status_code= 404, detail = "Transação não encontrada.")
-    dados_dict = dados.model_dump(exclude_none=True)
-    if 'data' in dados_dict:
-        try:
-            d1, _ = json_para_datetime(dados_dict["data"])
-            dados_dict['data'] = d1
-        except:
-            raise HTTPException(status_code= 400, detail= "Formato da data errado, o esperado: DD/MM/YYYY")
-    for atributo, valor in dados_dict.items():
-        setattr(id_confirmada, atributo, valor )
-    financeiro.salvar_arquivo()
-    return {"message": "Transação corrigida com sucesso"}
+    financeiro.correct_transaction(id_=id_, dados=dados)
+    return Response(status_code=200)
 
+@app.get("/transacoes/metricas", status_code=200)
+def exibir_metricas():
+    lista_categorias = [CategoriaTotal(**dict(d)) for d in financeiro.all_cat_values()]
+    metrica = Metricas(**dict(financeiro.get_balance_and_expense()))
+    return  ResponseMetricas(categoria_total=lista_categorias,metricas_= metrica)
