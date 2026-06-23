@@ -41,23 +41,16 @@ def home ():
     return {"status_code": "Está rodando!"}
 
 @app.get("/transacoes")
-def transacoes ( filtro : FiltrarTransacoes = Query(None, title = "Filtro", 
-                    description= " Schema para receber os dados e caso esses dados forem enviados, o filtro ocorra")) :
+def listar_transacoes ( filtro : FiltrarTransacoes = Query(None, title = "Filtro", 
+                description= " Schema para receber os dados e caso esses dados forem enviados, o filtro ocorra")):
+    dados = financeiro.search_by_filter(filtro=filtro)
+    return [ResponseTransacoes(**dict(d)) for d in dados ]
     
-    
-    if lista_transacoes:
-        return passar_financeiro_pro_json(lista_transacoes)
-    else:
-        raise HTTPException(status_code=404, detail= "Transação não encontrada.")
 
 @app.get("/transacoes/{id_}")
-def transacao_por_id (id_:int):
-    financeiro.carregar_arquivo()
-    lista_transacoes = financeiro.buscar_transacao(id_) 
-    if not lista_transacoes:
-        raise HTTPException(status_code=404, detail= "Transação não encontrada.") 
-    return passar_financeiro_pro_json([lista_transacoes])
-    
+def transacao_por_id (id_: int):
+    dados = financeiro.search_by_id(id_=id_)
+    return ResponseTransacoes(**dict(dados))
 
 
 @app.post("/transacoes/new",status_code=201)

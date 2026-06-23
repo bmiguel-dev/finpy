@@ -68,6 +68,14 @@ class Financeiro:
   
     
 
+    def search_by_id (self, id_: int):
+        with self.conectar_banco() as banco:
+            cursor = banco.cursor()
+            cursor.execute('''SELECT transacoes.* , categorias.nome FROM transacoes
+                           INNER JOIN categorias ON transacoes.categoria_id = categorias.id
+                           WHERE transacoes.categoria_id = ?''', [id_] )
+            dado = cursor.fetchone()
+            return dado 
     
     
     def all_cat_values (self) -> list[sqlite3.Row]:
