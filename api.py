@@ -27,7 +27,7 @@ class CriarTransacoes (BaseModel):
 
 class CorrigirTransacoes (BaseModel):
     valor: float | None = None
-    categoria: int | None = None
+    categoria_id: int | None = None
     descricao: str | None = None 
     data: str | None = None
 
@@ -55,21 +55,12 @@ def transacao_por_id (id_: int):
 
 @app.post("/transacoes/new",status_code=201)
 def criar_transacao (transacoes: CriarTransacoes):
-    try:
-        date_obj = datetime.strptime(transacoes.data, "%d/%m/%Y").date()
-        financeiro.adicionar_transacao(t)
-        financeiro.salvar_arquivo()
-        return {"mensage": "Transação criada com sucesso."}
-    except:
-        raise HTTPException(status_code=400, detail= "Entrada inválida.")
+    financeiro.adict_transaction(transacoes)
+    return Response(status_code=201)
 
 @app.delete("/transacoes/{id_}", status_code = 204)
 def deletar_transacoes (id_:int):
-    financeiro.carregar_arquivo()
-    confirmacao = financeiro.remover_transacao(id_)
-    if not confirmacao:
-        raise HTTPException(status_code=404, detail= "Transação não encontrada.")
-    financeiro.salvar_arquivo()
+    financeiro.remove_transaction(id_)
     return Response(status_code=204)
     
 @app.patch("/transacoes/{id_}", status_code= 200)

@@ -127,6 +127,19 @@ class Financeiro:
             dados = cursor.fetchall()
             return dados   
  
+    def correct_transaction (self, id_, dados : CorrigirTransacoes):
+        dados_dict = {chave:valor for chave,valor in  dados.model_dump().items() if valor is not None}
+        place_holder = ", ".join([f'{chave} = ?' for chave in  dados_dict.keys()])
+        parametros = []
+        parametros.extend(list(dados_dict.values()))
+        parametros.append(id_)
+        query = f"UPDATE transacoes SET {place_holder} WHERE id = ?"
+        with self.conectar_banco() as banco: 
+            cursor = banco.cursor()
+            cursor.execute(query,parametros)
+            banco.commit()
+            return True
+        
     
     
     
