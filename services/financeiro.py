@@ -27,7 +27,18 @@ class Financeiro:
                             FOREIGN KEY (categoria_id) REFERENCES categorias(id))''')
             banco.commit() 
 
-
+    def create_idx_category (self):
+        with self.conectar_banco() as banco:
+            cursor = banco.cursor()
+            cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_categoria_id ON transacoes(categoria_id)''')
+            banco.commit()
+        
+    def create_idx_date (self):
+        with self.conectar_banco() as banco:
+            cursor = banco.cursor()
+            cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes(data)''')
+            banco.commit()
+            
     def adict_transaction (self, entrada_dado : CriarTransacoes ):
         with self.conectar_banco() as banco:
             cursor = banco.cursor()
