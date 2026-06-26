@@ -11,6 +11,8 @@ from database import *
 
 
 financeiro = Financeiro (conexão_banco= conect_db)
+financeiro.iniciate_table()
+
 app = FastAPI()
 class ResponseTransacoes (BaseModel): 
     _id :int

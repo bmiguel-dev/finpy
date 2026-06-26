@@ -9,6 +9,12 @@ class Financeiro:
     def __init__(self,conexão_banco : Callable[[],sqlite3.Connection] ):
         self.conectar_banco = conexão_banco
 
+    def iniciate_table (self):
+        self.create_table_category()
+        self.create_table_transactions()
+        self.create_idx_category()
+        self.create_idx_date()
+        
     def create_table_category(self):
         with self.conectar_banco() as banco:
             cursor = banco.cursor()
@@ -38,7 +44,7 @@ class Financeiro:
             cursor = banco.cursor()
             cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes(data)''')
             banco.commit()
-            
+
     def adict_transaction (self, entrada_dado : CriarTransacoes ):
         with self.conectar_banco() as banco:
             cursor = banco.cursor()
