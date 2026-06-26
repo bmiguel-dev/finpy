@@ -1,1 +1,1 @@
-from .transacao import Transacao
+from .transacao import *

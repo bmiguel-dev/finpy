@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from enums import Categoria
+from pydantic import BaseModel
 class Transacao:
     def __init__(self, id_transacao=None, categoria_value:int=None, descricao:str=None, valor:float=None, data:datetime=None):
         self._id : int = id_transacao 
@@ -83,3 +84,39 @@ class Transacao:
     def __str__(self) -> str:
         return f"ID: {self.id:>3} | CATEGORIA: {self._categoria.name:<16} | DESCRIÇÃO: {self.descricao:<35} | VALOR: R${self.valor:>11.2f} | DATA: {self.data.strftime("%d/%m/%Y")}"
     
+class ResponseTransacoes (BaseModel): 
+    id :int
+    valor: float
+    categoria: int
+    descricao: str
+    data: str
+
+class CriarTransacoes (BaseModel):
+    valor: float
+    categoria_id: int
+    descricao: str
+    data: str
+
+class CorrigirTransacoes (BaseModel):
+    valor: float | None = None
+    categoria_id: int | None = None
+    descricao: str | None = None 
+    data: str | None = None
+
+class FiltrarTransacoes (BaseModel):
+    categoria_filtro : list[int] | None = None
+    d_inicio : str | None = None
+    d_fim : str | None = None
+
+class CategoriaTotal(BaseModel):
+    total_valores : int
+    nome_categoria : str
+
+class Metricas (BaseModel):
+    saldo_total  : int
+    despesa_total : int
+    total_liquido : int
+
+class ResponseMetricas(BaseModel):
+    categoria_total : list[CategoriaTotal]
+    metricas_ : Metricas

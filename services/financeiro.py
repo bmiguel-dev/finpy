@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Callable, Optional
 
 import sqlite3
-from api import ResponseTransacoes, CriarTransacoes, CorrigirTransacoes, FiltrarTransacoes
+from api import CriarTransacoes, CorrigirTransacoes, FiltrarTransacoes
 class Financeiro:
    
     def __init__(self,conexão_banco : Callable[[],sqlite3.Connection] ):

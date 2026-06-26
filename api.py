@@ -1,55 +1,18 @@
 from fastapi import FastAPI, Query,HTTPException, Response
 from services import Financeiro
 from utils import capturar_transacao, passar_financeiro_pro_json,date_isoformat
-from models import Transacao
-from pydantic import BaseModel,field_validator
-
+from models import *
 from datetime import datetime,date
 from typing import Optional
 from database import *
 
-
+app = FastAPI()
 
 financeiro = Financeiro (conexão_banco= conect_db)
 financeiro.iniciate_table()
 
-app = FastAPI()
-class ResponseTransacoes (BaseModel): 
-    _id :int
-    valor: float
-    categoria: int
-    descricao: str
-    data: str
 
-class CriarTransacoes (BaseModel):
-    valor: float
-    categoria_id: int
-    descricao: str
-    data: str
 
-class CorrigirTransacoes (BaseModel):
-    valor: float | None = None
-    categoria_id: int | None = None
-    descricao: str | None = None 
-    data: str | None = None
-
-class FiltrarTransacoes (BaseModel):
-    categoria_filtro : list[int] | None = None
-    d_inicio : str | None = None
-    d_fim : str | None = None
-
-class CategoriaTotal(BaseModel):
-    total_valores : int
-    nome_categoria : str
-
-class Metricas (BaseModel):
-    saldo_total  : int
-    despesa_total : int
-    total_liquido : int
-
-class ResponseMetricas(BaseModel):
-    categoria_total : list[CategoriaTotal]
-    metricas_ = Metricas
 
 @app.get("/")
 def home ():
