@@ -87,7 +87,7 @@ class Transacao:
 class ResponseTransacoes (BaseModel): 
     id :int
     valor: float
-    categoria: int
+    categoria_id: int
     descricao: str
     data: str
 

@@ -1,9 +1,7 @@
-from models.transacao import Transacao, Categoria
-from datetime import datetime
-from typing import Callable, Optional
-
+from typing import Callable 
 import sqlite3
-from api import CriarTransacoes, CorrigirTransacoes, FiltrarTransacoes
+from models import *
+
 class Financeiro:
    
     def __init__(self,conexão_banco : Callable[[],sqlite3.Connection] ):

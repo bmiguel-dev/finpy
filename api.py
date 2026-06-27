@@ -1,26 +1,23 @@
 from fastapi import FastAPI, Query,HTTPException, Response
 from services import Financeiro
-from utils import capturar_transacao, passar_financeiro_pro_json,date_isoformat
-from models import *
-from datetime import datetime,date
+from models.transacao import CriarTransacoes, CorrigirTransacoes, FiltrarTransacoes, ResponseTransacoes,ResponseMetricas,CategoriaTotal,Metricas
+from database import conect_db
 from typing import Optional
-from database import *
-
 app = FastAPI()
 
 financeiro = Financeiro (conexão_banco= conect_db)
 financeiro.iniciate_table()
-
-
-
 
 @app.get("/")
 def home ():
     return {"status_code": "Está rodando!"}
 
 @app.get("/transacoes")
-def listar_transacoes ( filtro : FiltrarTransacoes = Query(None, title = "Filtro", 
-                description= " Schema para receber os dados e caso esses dados forem enviados, o filtro ocorra")):
+def listar_transacoes ( categoria_filtro : Optional[list[int]] = Query(None,alias="cat", title = "categoria", 
+                description= " id da categoria que o usuário deseja filtrar"), d_inicio: Optional[str] = Query(None, title = "Data Inicio", 
+                description= " data que irá ser o ponto de partida pro filtro"), d_fim: Optional[str] = Query(None, title = "Data Fim", 
+                description= " data que irá ser o ponto de partida pro filtro")):
+    filtro = FiltrarTransacoes(categoria_filtro=categoria_filtro, d_inicio=d_inicio, d_fim=d_fim)
     dados = financeiro.search_by_filter(filtro=filtro)
     return [ResponseTransacoes(**dict(d)) for d in dados ]
     
