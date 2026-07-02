@@ -15,11 +15,11 @@ class Categoria(Enum):
         return [
             (cls.SALARIO.value, 'Salário', TipoTransacao.RECEITA.value),
             (cls.INVESTIMENTOS.value, 'Investimentos', TipoTransacao.RECEITA.value),
-            (cls.FREELANCE.value, 'Alimentação', TipoTransacao.RECEITA.value),
-            (cls.ALIMENTACAO.value, 'Transporte', TipoTransacao.DESPESA.value),
-            (cls.LAZER.value, 'Transporte', TipoTransacao.DESPESA.value),
-            (cls.SAUDE.value, 'Transporte', TipoTransacao.DESPESA.value),
-            (cls.EDUCACAO.value, 'Transporte', TipoTransacao.DESPESA.value),
+            (cls.FREELANCE.value, 'Freelance', TipoTransacao.RECEITA.value),
+            (cls.ALIMENTACAO.value, 'Alimentação', TipoTransacao.DESPESA.value),
+            (cls.LAZER.value, 'Lazer', TipoTransacao.DESPESA.value),
+            (cls.SAUDE.value, 'Saúde', TipoTransacao.DESPESA.value),
+            (cls.EDUCACAO.value, 'Educação', TipoTransacao.DESPESA.value),
             (cls.TRANSPORTE.value, 'Transporte', TipoTransacao.DESPESA.value)
         ]
             

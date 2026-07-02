@@ -17,6 +17,7 @@ def listar_transacoes ( categoria_filtro : Optional[list[int]] = Query(None,alia
                 description= " id da categoria que o usuário deseja filtrar"), d_inicio: Optional[str] = Query(None, title = "Data Inicio", 
                 description= " data que irá ser o ponto de partida pro filtro"), d_fim: Optional[str] = Query(None, title = "Data Fim", 
                 description= " data que irá ser o ponto de partida pro filtro")):
+    
     filtro = FiltrarTransacoes(categoria_filtro=categoria_filtro, d_inicio=d_inicio, d_fim=d_fim)
     dados = financeiro.search_by_filter(filtro=filtro)
     return [ResponseTransacoes(**dict(d)) for d in dados ]

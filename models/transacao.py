@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from enums import Categoria
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 class Transacao:
     def __init__(self, id_transacao=None, categoria_value:int=None, descricao:str=None, valor:float=None, data:datetime=None):
         self._id : int = id_transacao 
@@ -97,16 +97,115 @@ class CriarTransacoes (BaseModel):
     descricao: str
     data: str
 
+    @field_validator("valor")
+    def valor_validado (cls,vlr):
+        if vlr <= 0:
+            raise ValueError("Valor não pode ser negativo, e nem zero.")
+        return vlr
+    
+    @field_validator("categoria_id")
+    def categoria_validada (cls, ct):
+        if ct <= 0:
+            raise ValueError("Valor não pode ser negativo, e nem zero.")
+        return ct
+    
+    @field_validator("data")
+    def data_validada (cls,dt:str):
+        hoje = datetime.now().date() 
+        try:
+            dt_obj = datetime.strptime(dt, "%Y-%m-%d").date() 
+        except:
+            raise ValueError("Coloque a data no formato correto (YYYY-MM-DD)")
+        if dt_obj > hoje:
+            raise ValueError("A data não pode ser futura.")
+        return dt
+        
+    
+    @field_validator("descricao")
+    def descricao_validada(cls,dsc:str):
+        if not dsc or not dsc.strip():
+            raise ValueError("É necessário uma descrição.")
+        return dsc
+        
+    
+
+
 class CorrigirTransacoes (BaseModel):
     valor: float | None = None
     categoria_id: int | None = None
     descricao: str | None = None 
     data: str | None = None
 
+    @field_validator("valor")
+    def valor_validado (cls,vlr | None):
+        if vlr is None:
+            return vlr
+        if vlr <= 0:
+            raise ValueError("Valor não pode ser negativo, e nem zero.")
+        return vlr
+    
+    @field_validator("categoria_id")
+    def categoria_validada (cls, ct | None):
+        if ct is None:
+            return ct
+        if ct <= 0:
+            raise ValueError("Valor não pode ser negativo, e nem zero.")
+        return ct
+    
+    @field_validator("data")
+    def data_validada (cls,dt:str | None):
+        if dt is None:
+            return dt
+        hoje = datetime.now().date() 
+        try:
+            dt_obj = datetime.strptime(dt, "%Y-%m-%d").date() 
+        except:
+            raise ValueError("Coloque a data no formato correto (YYYY-MM-DD)")
+        if dt_obj > hoje:
+            raise ValueError("A data não pode ser futura.")
+        return dt
+        
+    
+
 class FiltrarTransacoes (BaseModel):
     categoria_filtro : list[int] | None = None
     d_inicio : str | None = None
     d_fim : str | None = None
+
+    @field_validator("categoria_filtro")
+    def validar_categorias(cls,lct: list[int] | None ):
+        if lct is None:
+            return lct
+        for x in lct:
+            if x <= 0:
+                raise ValueError("o ID da categoria não pode ser 0 nem negativo.")
+        return lct
+    
+    @field_validator("d_inicio")
+    def data_i_validada (cls,dt:str | None ):
+        if dt is None:
+            return dt
+        hoje = datetime.now().date() 
+        try:
+            dt_obj = datetime.strptime(dt, "%Y-%m-%d").date() 
+        except:
+            raise ValueError("Coloque a data no formato correto (YYYY-MM-DD)")
+        if dt_obj > hoje:
+            raise ValueError("A data não pode ser futura.")
+        return dt
+    
+    @field_validator("d_fim")
+    def data_f_validada (cls,dt:str | None ):
+        if dt is None: 
+            return dt
+        hoje = datetime.now().date() 
+        try:
+            dt_obj = datetime.strptime(dt, "%Y-%m-%d").date() 
+        except:
+            raise ValueError("Coloque a data no formato correto (YYYY-MM-DD)")
+        if dt_obj > hoje:
+            raise ValueError("A data não pode ser futura.")
+        return dt
 
 class CategoriaTotal(BaseModel):
     total_valores : int
