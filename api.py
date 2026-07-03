@@ -1,12 +1,22 @@
-from fastapi import FastAPI, Query,HTTPException
+from fastapi import FastAPI, Query,HTTPException, Request
+from fastapi.responses import JSONResponse
 from services import Financeiro
 from models.transacao import CriarTransacoes, CorrigirTransacoes, FiltrarTransacoes, ResponseTransacoes,ResponseMetricas,CategoriaTotal,Metricas
 from database import conect_db
 from typing import Optional
+import sqlite3
 app = FastAPI()
 
 financeiro = Financeiro (conexão_banco= conect_db)
 financeiro.iniciate_table()
+
+@app.exception_handler(sqlite3.Error)
+def erro_banco (requisicao : Request, erro : sqlite3.Error ):
+    return JSONResponse(status_code=500, content= {"erro": f"Deu erro com banco de dados na requisição: {requisicao}" })
+
+@app.exception_handler(Exception)
+def erro_api (requisicao:Request, erro: Exception):
+    return JSONResponse(status_code=500,content= {"erro": f"Deu erro: {erro} na requisição {requisicao}"})
 
 @app.get("/")
 def home ():
