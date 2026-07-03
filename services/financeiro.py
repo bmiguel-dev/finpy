@@ -105,10 +105,10 @@ class Financeiro:
     def get_balance_and_expense (self) -> sqlite3.Row | None:
         with self.conectar_banco() as banco:  
             cursor = banco.cursor()
-            cursor.execute('''SELECT SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END) AS saldo_total,
-                            SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END) AS despesa_total, 
-                           (SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END) - 
-                            SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END)) AS total_liquido
+            cursor.execute('''SELECT COALESCE(SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END),0) AS saldo_total,
+                            COALESCE(SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END),0) AS despesa_total, 
+                           (COALESCE(SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END),0) - 
+                            COALESCE(SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END),0) AS total_liquido
                             FROM transacoes
                             INNER JOIN categorias ON transacoes.categoria_id = categorias.id
                            ''')
