@@ -1,6 +1,8 @@
 from datetime import datetime, date
 from enums import Categoria
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator,Field
+
+
 class Transacao:
     def __init__(self, id_transacao=None, categoria_value:int=None, descricao:str=None, valor:float=None, data:datetime=None):
         self._id : int = id_transacao 
@@ -137,7 +139,7 @@ class CorrigirTransacoes (BaseModel):
     data: str | None = None
 
     @field_validator("valor")
-    def valor_validado (cls,vlr | None):
+    def valor_validado (cls,vlr : float| None):
         if vlr is None:
             return vlr
         if vlr <= 0:
@@ -145,7 +147,7 @@ class CorrigirTransacoes (BaseModel):
         return vlr
     
     @field_validator("categoria_id")
-    def categoria_validada (cls, ct | None):
+    def categoria_validada (cls, ct : int | None):
         if ct is None:
             return ct
         if ct <= 0:
@@ -168,18 +170,9 @@ class CorrigirTransacoes (BaseModel):
     
 
 class FiltrarTransacoes (BaseModel):
-    categoria_filtro : list[int] | None = None
-    d_inicio : str | None = None
-    d_fim : str | None = None
+    d_inicio : str | None  = Field(None, title = "Data Inicio", description= " data que irá ser o ponto de partida pro filtro")
+    d_fim : str | None = Field(None, title = "Data Fim", description= " data que irá ser o ponto de partida pro filtro")
 
-    @field_validator("categoria_filtro")
-    def validar_categorias(cls,lct: list[int] | None ):
-        if lct is None:
-            return lct
-        for x in lct:
-            if x <= 0:
-                raise ValueError("o ID da categoria não pode ser 0 nem negativo.")
-        return lct
     
     @field_validator("d_inicio")
     def data_i_validada (cls,dt:str | None ):

@@ -1,6 +1,5 @@
 import sqlite3
-from enums import Categoria
-from typing import Callable
+
 
 
 

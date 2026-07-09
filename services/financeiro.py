@@ -56,24 +56,22 @@ class Financeiro:
             cursor.execute('''DELETE FROM transacoes WHERE id = ?''', [id])
             banco.commit()
 
-    def search_by_filter (self, filtro : FiltrarTransacoes):
+    def search_by_filter (self,categorias:list[int], filtro : FiltrarTransacoes):
         with self.conectar_banco() as banco:
             cursor = banco.cursor()
             dados = filtro.model_dump()
-            categorias = dados['categoria_filtro']
-            data_i = dados['d_inicio']
-            data_f = dados['d_fim']
-            
+            print("DEBUG filtro recebido:", dados)
+            data_i = dados.get('d_inicio')
+            data_f = dados.get('d_fim') 
             query = '''SELECT transacoes.*, categorias.nome FROM transacoes
                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id
                            WHERE 1=1'''
             parametros = []
-            if filtro.categoria_filtro: 
-                place_holders = ', '.join(['?'] * len(filtro.categoria_filtro))
-                query += f" AND categoria_id IN ({place_holders})"
+            if categorias:
+                place_holders = ', '.join(['?'] * len(categorias))
+                query += f" AND categorias.id IN ({place_holders})"
                 parametros.extend(categorias)
-
-            if filtro.d_inicio and filtro.d_fim:
+            if data_i and data_f:
                 query += f" AND transacoes.data BETWEEN ? AND ?"
                 parametros.extend([data_i, data_f])
             cursor.execute(query,parametros)
