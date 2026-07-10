@@ -54,23 +54,23 @@ def transacao_por_id (id_: int):
 @app.post("/transacoes/new",status_code=201)
 def criar_transacao (transacoes: CriarTransacoes):
     financeiro.adict_transaction(transacoes)
-    return 
+    return {"resposta":"transação criada com sucesso"}
 
 @app.delete("/transacoes/{id_}", status_code = 204)
 def deletar_transacoes (id_:int):
         id_confirmado = financeiro.search_by_id(id_=id_)
         if not id_confirmado:
-            raise HTTPException(status_code=404, detail= "transação não encontrada")
+            raise HTTPException(status_code=404, detail= "Transação não encontrada.")
         financeiro.remove_transaction(id_)
-        return 
+        return {"resposta":"transação deletada com sucesso"}
     
 @app.patch("/transacoes/{id_}", status_code= 200)
 def corrigir_transacao (id_:int, dados: CorrigirTransacoes):
         id_confirmado = financeiro.search_by_id(id_=id_)
         if not id_confirmado:
-            raise HTTPException(status_code=404, detail= "transação não encontrada")
+            raise HTTPException(status_code=404, detail= "Transação não encontrada.")
         financeiro.correct_transaction(id_=id_, dados=dados)
-        return 
+        return {"resposta":"transação corrigida com sucesso"}
       
 
   
