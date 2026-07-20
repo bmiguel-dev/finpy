@@ -49,6 +49,7 @@ class Financeiro:
             cursor.execute('''INSERT INTO transacoes (categoria_id, valor, descricao, data)
                             VALUES (:categoria_id,:valor,:descricao,:data) ''', entrada_dado.model_dump())
             banco.commit()
+            return cursor.lastrowid
             
     def remove_transaction (self, id:int):
         with self.conectar_banco() as banco:
@@ -84,26 +85,22 @@ class Financeiro:
     def search_by_id (self, id_: int):
         with self.conectar_banco() as banco:
             cursor = banco.cursor()
-            cursor.execute('''SELECT transacoes.* , categorias.nome FROM transacoes
-                           INNER JOIN categorias ON transacoes.categoria_id = categorias.id
+            cursor.execute('''SELECT transacoes.*  FROM transacoes
                            WHERE transacoes.id = ?''', [id_] )
             dado = cursor.fetchone()
-            return dado 
+            return dado
     
     
     def all_cat_values (self) -> list[sqlite3.Row]:
-        print("debug: ta funcionando")
         with self.conectar_banco() as banco:
             cursor = banco.cursor() 
             cursor.execute('''SELECT SUM(transacoes.valor) AS total_valores, categorias.nome AS nome_categoria
                               FROM transacoes INNER JOIN categorias ON transacoes.categoria_id = categorias.id
                               GROUP BY categorias.nome''')
             dados = cursor.fetchall()
-            print(str(dados))
             return dados
     
     def get_balance_and_expense (self) -> sqlite3.Row | None:
-        print("debug: ta funcionando pt2")
         with self.conectar_banco() as banco:  
             cursor = banco.cursor()
             cursor.execute('''SELECT COALESCE(SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END),0) AS saldo_total,
@@ -114,7 +111,6 @@ class Financeiro:
                             INNER JOIN categorias ON transacoes.categoria_id = categorias.id
                            ''')
             dados = cursor.fetchone()
-            print(str(dados))
             return dados
     
         
@@ -132,8 +128,7 @@ class Financeiro:
             banco.commit()
             return True
         
-    
-    
+
     
     
 

@@ -38,23 +38,24 @@ def listar_transacoes (categorias : list[int] = Query(default=None,title="Catego
     dados = financeiro.search_by_filter(categorias=categorias,filtro=filtro)
     return [ResponseTransacoes(**dict(d)) for d in dados ]
     
-@app.get("/transacoes/metricas", status_code=200)
+@app.get("/transacoes/metricas", status_code=200,response_model= ResponseMetricas)
 def exibir_metricas():
     lista_categorias = [CategoriaTotal(**dict(d)) for d in financeiro.all_cat_values()]
     metrica = Metricas(**dict(financeiro.get_balance_and_expense()))
     return  ResponseMetricas(categoria_total=lista_categorias,metricas_= metrica)
 
-@app.get("/transacoes/{id_}")
+@app.get("/transacoes/{id_}",  response_model=ResponseTransacoes)
 def transacao_por_id (id_: int):   
     dados = financeiro.search_by_id(id_=id_)
     if not dados:
         raise HTTPException(status_code=404, detail= "Transação não encontrada.")
-    return ResponseTransacoes(**dict(dados))
+    return dict(dados)
 
-@app.post("/transacoes/new",status_code=201)
+@app.post("/transacoes/new",status_code=201,response_model=ResponseTransacoes)
 def criar_transacao (transacoes: CriarTransacoes):
-    financeiro.adict_transaction(transacoes)
-    return {"resposta":"transação criada com sucesso"}
+    transacao_adicionada  = financeiro.adict_transaction(transacoes)
+    response_transacao = financeiro.search_by_id(transacao_adicionada)
+    return dict(response_transacao)
 
 @app.delete("/transacoes/{id_}", status_code = 204)
 def deletar_transacoes (id_:int):
@@ -62,15 +63,16 @@ def deletar_transacoes (id_:int):
         if not id_confirmado:
             raise HTTPException(status_code=404, detail= "Transação não encontrada.")
         financeiro.remove_transaction(id_)
-        return {"resposta":"transação deletada com sucesso"}
+        return 
     
-@app.patch("/transacoes/{id_}", status_code= 200)
+@app.patch("/transacoes/{id_}", status_code= 200, response_model= ResponseTransacoes)
 def corrigir_transacao (id_:int, dados: CorrigirTransacoes):
         id_confirmado = financeiro.search_by_id(id_=id_)
         if not id_confirmado:
             raise HTTPException(status_code=404, detail= "Transação não encontrada.")
         financeiro.correct_transaction(id_=id_, dados=dados)
-        return {"resposta":"transação corrigida com sucesso"}
+        id_return = financeiro.search_by_id(id_=id_)
+        return dict(id_return)
       
 
   

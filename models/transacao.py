@@ -93,11 +93,16 @@ class ResponseTransacoes (BaseModel):
     descricao: str
     data: str
 
+    model_config = {"from_attributes": True}
+
 class CriarTransacoes (BaseModel):
     valor: float
     categoria_id: int
     descricao: str
     data: str
+    
+    model_config = {
+        "str_strip_whitespace": True}
 
     @field_validator("valor")
     def valor_validado (cls,vlr):
@@ -138,6 +143,10 @@ class CorrigirTransacoes (BaseModel):
     descricao: str | None = None 
     data: str | None = None
 
+    model_config = {
+        "str_strip_whitespace": True
+        }
+    
     @field_validator("valor")
     def valor_validado (cls,vlr : float| None):
         if vlr is None:
@@ -173,11 +182,15 @@ class FiltrarTransacoes (BaseModel):
     d_inicio : str | None  = Field(None, title = "Data Inicio", description= " data que irá ser o ponto de partida pro filtro")
     d_fim : str | None = Field(None, title = "Data Fim", description= " data que irá ser o ponto de partida pro filtro")
 
+    model_config = {
+        "str_strip_whitespace": True
+        }
     
     @field_validator("d_inicio")
     def data_i_validada (cls,dt:str | None ):
         if dt is None:
             return dt
+        print("debug: field validator")
         hoje = datetime.now().date() 
         try:
             dt_obj = datetime.strptime(dt, "%Y-%m-%d").date() 
@@ -191,6 +204,7 @@ class FiltrarTransacoes (BaseModel):
     def data_f_validada (cls,dt:str | None ):
         if dt is None: 
             return dt
+        print("debug: field validator")
         hoje = datetime.now().date() 
         try:
             dt_obj = datetime.strptime(dt, "%Y-%m-%d").date() 
@@ -204,11 +218,17 @@ class CategoriaTotal(BaseModel):
     total_valores : int
     nome_categoria : str
 
+    model_config = {"from_attributes": True}
+
 class Metricas (BaseModel):
     saldo_total  : int
     despesa_total : int
     total_liquido : int
 
+    model_config = {"from_attributes": True}
+
 class ResponseMetricas(BaseModel):
     categoria_total : list[CategoriaTotal]
-    metricas_ : Metricas
+    metricas_: Metricas
+
+    model_config = {"from_attributes": True}
