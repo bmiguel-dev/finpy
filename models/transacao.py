@@ -96,6 +96,7 @@ class ResponseTransacoes (BaseModel):
     model_config = {"from_attributes": True}
 
 class CriarTransacoes (BaseModel):
+    user_id : int
     valor: float
     categoria_id: int
     descricao: str

@@ -1,6 +1,7 @@
-from typing import Callable 
 import sqlite3
 from models import *
+from utils.hash import verifica_senha,criar_hash
+
 
 
 class Financeiro:
@@ -10,13 +11,14 @@ class Financeiro:
 
     def iniciate_table (self):
         with sqlite3.connect(self.db_name) as conn:
-            self.create_table_category(conn=conn)
-            self.create_table_transactions(conn=conn)
+            self.create_table_usuarios(conn=conn)
+            self.create_table_categorias(conn=conn)
+            self.create_table_transacoes(conn=conn)
             self.create_idx_category(conn=conn)
             self.create_idx_date(conn=conn)
 
     def conect_db(self):
-        banco = sqlite3.connect('finpy.db')
+        banco = sqlite3.connect(self.db_name)
         banco.execute("PRAGMA foreign_keys = ON;")
         banco.row_factory = sqlite3.Row
         try:
@@ -24,20 +26,31 @@ class Financeiro:
         finally:
             banco.close() 
 
-    def create_table_category(self,conn : sqlite3.Connection):
+    def create_table_categorias(self,conn : sqlite3.Connection):
             cursor = conn.cursor()
             cursor.execute(''' CREATE TABLE IF NOT EXISTS categorias (id INTEGER NOT NULL PRIMARY KEY, nome TEXT NOT NULL UNIQUE, tipo INTEGER NOT NULL)''')
             cursor.executemany('''INSERT OR IGNORE INTO categorias (id, nome, tipo) VALUES (?,?,?)''', Categoria.lista_categorias() )
             conn.commit()
+
+    def create_table_usuarios (self, conn : sqlite3.Connection):
+                cursor = conn.cursor() 
+                cursor.execute(''' CREATE TABLE IF NOT EXISTS usuarios (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                                          nome TEXT UNIQUE NOT NULL,
+                                                                          email TEXT UNIQUE NOT NULL,
+                                                                          senha TEXT NOT NULL,
+                                                                          criacao_login DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+                conn.commit() 
     
-    def create_table_transactions(self, conn : sqlite3.Connection):
+    def create_table_transacoes (self, conn : sqlite3.Connection):
             cursor = conn.cursor() 
             cursor.execute(''' CREATE TABLE IF NOT EXISTS transacoes (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                                      user_id INTEGER,
                                                                       categoria_id INTEGER,
                                                                       valor REAL NOT NULL,
                                                                       descricao TEXT NOT NULL,
                                                                       data DATE NOT NULL,
-                            FOREIGN KEY (categoria_id) REFERENCES categorias(id))''')
+                            FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+                            FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE)''')
             conn.commit() 
 
     def create_idx_category (self, conn : sqlite3.Connection ):
@@ -50,7 +63,41 @@ class Financeiro:
         cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes(data)''')
         conn.commit()
 
-    def adict_transaction (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection ):
+    def create_user (self, entrada_dado : UsuarioCadastro,  conn:sqlite3.Connection):
+        cursor = conn.cursor()
+        dados = entrada_dado.model_dump()
+        dados['senha'] = criar_hash(entrada_dado.senha)
+        cursor.execute('''INSERT INTO usuarios (nome, email, senha) VALUES (:nome,:email,:senha)''', dados )
+        conn.commit()
+        return cursor.lastrowid
+
+    def user_validation (self, dados : UsuarioLogin, conn : sqlite3.Connection) -> int | bool: #email e senha
+        cursor = conn.cursor() 
+        cursor.execute(''' SELECT id , senha FROM usuarios WHERE email = ?''', [dados.email])
+        resultado = cursor.fetchone()
+        if resultado is None:
+            return False
+        dados_validados = dict(resultado)
+        id_user = dados_validados.get('id')
+        senha_hash = dados_validados.get('senha')
+        senha_verificada = verifica_senha (senha=dados.senha, hash=senha_hash)
+        if senha_verificada is False:
+            return False
+        return id_user
+
+    def search_user_by_email (self, dados : UsuarioCadastro, conn : sqlite3.Connection ):
+        email = dados.email
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM usuarios WHERE email = ?", [email])
+        return cursor.fetchone()
+    
+    def search_user_by_id(self, id_: int, conn: sqlite3.Connection) -> sqlite3.Row:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM usuarios WHERE id = ?", [id_])
+        return cursor.fetchone()
+    
+            
+    def adict_transaction (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection ) -> int: #TRANSACAO ESTA SEM USER_ID
         cursor = conn.cursor()
         cursor.execute('''INSERT INTO transacoes (categoria_id, valor, descricao, data)
                         VALUES (:categoria_id,:valor,:descricao,:data) ''', entrada_dado.model_dump())
@@ -62,7 +109,7 @@ class Financeiro:
         cursor.execute('''DELETE FROM transacoes WHERE id = ?''', [id])
         conn.commit()
 
-    def search_by_filter (self,categorias:list[int], filtro : FiltrarTransacoes , conn : sqlite3.Connection):
+    def search_by_filter (self,categorias:list[int], filtro : FiltrarTransacoes , conn : sqlite3.Connection) -> list[sqlite3.Row] | None:
         cursor = conn.cursor()
         dados = filtro.model_dump()
         print("DEBUG filtro recebido:", dados)
