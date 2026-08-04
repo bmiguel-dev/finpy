@@ -16,6 +16,7 @@ class Financeiro:
             self.create_table_transacoes(conn=conn)
             self.create_idx_category(conn=conn)
             self.create_idx_date(conn=conn)
+            self.create_idx_id_user(conn=conn) 
 
     def conect_db(self):
         banco = sqlite3.connect(self.db_name)
@@ -63,6 +64,11 @@ class Financeiro:
         cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes(data)''')
         conn.commit()
 
+    def create_idx_id_user (self, conn : sqlite3.Connection ):
+            cursor = conn.cursor()
+            cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_user_id ON transacoes(user_id)''')
+            conn.commit()
+
     def create_user (self, entrada_dado : UsuarioCadastro,  conn:sqlite3.Connection):
         cursor = conn.cursor()
         dados = entrada_dado.model_dump()
@@ -97,19 +103,21 @@ class Financeiro:
         return cursor.fetchone()
     
             
-    def adict_transaction (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection ) -> int: #TRANSACAO ESTA SEM USER_ID
+    def adict_transaction (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection, usuario_atual: int ) -> int: #TRANSACAO ESTA SEM USER_ID
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO transacoes (categoria_id, valor, descricao, data)
-                        VALUES (:categoria_id,:valor,:descricao,:data) ''', entrada_dado.model_dump())
+        entrada_dado = entrada_dado.model_dump()
+        entrada_dado["user_id"] = usuario_atual
+        cursor.execute('''INSERT INTO transacoes (user_id, categoria_id, valor, descricao, data)
+                        VALUES (?, :categoria_id,:valor,:descricao,:data) ''', entrada_dado)
         conn.commit()
         return cursor.lastrowid
             
-    def remove_transaction (self, id:int , conn : sqlite3.Connection):
+    def remove_transaction (self, id:int , conn : sqlite3.Connection, usuario_id):
         cursor = conn.cursor()
-        cursor.execute('''DELETE FROM transacoes WHERE id = ?''', [id])
+        cursor.execute('''DELETE FROM transacoes WHERE id = ? AND user_id  = ?''', [id,usuario_id])
         conn.commit()
 
-    def search_by_filter (self,categorias:list[int], filtro : FiltrarTransacoes , conn : sqlite3.Connection) -> list[sqlite3.Row] | None:
+    def search_by_filter (self,categorias:list[int], filtro : FiltrarTransacoes , conn : sqlite3.Connection, usuario_id : int) -> list[sqlite3.Row] | None:
         cursor = conn.cursor()
         dados = filtro.model_dump()
         print("DEBUG filtro recebido:", dados)
@@ -117,8 +125,8 @@ class Financeiro:
         data_f = dados.get('d_fim') 
         query = '''SELECT transacoes.*, categorias.nome FROM transacoes
                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id
-                           WHERE 1=1'''
-        parametros = []
+                           WHERE transacoes.user_id = ?'''
+        parametros = [usuario_id]
         if categorias:
             place_holders = ', '.join(['?'] * len(categorias))
             query += f" AND categorias.id IN ({place_holders})"
@@ -126,6 +134,12 @@ class Financeiro:
         if data_i and data_f:
             query += f" AND transacoes.data BETWEEN ? AND ?"
             parametros.extend([data_i, data_f])
+        elif data_i:
+            query += " AND transacoes.data >= ?"
+            parametros.append(data_i)
+        elif data_f:
+            query += " AND transacoes.data <= ?"
+            parametros.append(data_f)
         cursor.execute(query,parametros)
         dados_banco = cursor.fetchall()
         return dados_banco
@@ -133,43 +147,44 @@ class Financeiro:
   
     
 
-    def search_by_id (self, id_: int , conn : sqlite3.Connection):
+    def search_by_id (self, id_: int , conn : sqlite3.Connection, usuario_id : int):
         cursor = conn.cursor()
         cursor.execute('''SELECT transacoes.*  FROM transacoes
-                           WHERE transacoes.id = ?''', [id_] )
+                           WHERE transacoes.id = ? AND transacoes.user_id = ?''', [id_, usuario_id] )
         dado = cursor.fetchone()
         return dado
     
     
-    def all_cat_values (self , conn : sqlite3.Connection) -> list[sqlite3.Row]:
+    def all_cat_values (self , conn : sqlite3.Connection, usuario_id: int) -> list[sqlite3.Row]:
         cursor = conn.cursor() 
         cursor.execute('''SELECT SUM(transacoes.valor) AS total_valores, categorias.nome AS nome_categoria
-                              FROM transacoes INNER JOIN categorias ON transacoes.categoria_id = categorias.id
-                              GROUP BY categorias.nome''')
+                              FROM transacoes INNER JOIN categorias ON transacoes.categoria_id = categorias.id WHERE transacoes.user_id = ?
+                              GROUP BY categorias.nome''', [usuario_id])
         dados = cursor.fetchall()
         return dados
     
-    def get_balance_and_expense (self , conn : sqlite3.Connection) -> sqlite3.Row | None:
+    def get_balance_and_expense (self , conn : sqlite3.Connection, usuario_id) -> sqlite3.Row | None:
         cursor = conn.cursor()
         cursor.execute('''SELECT COALESCE(SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END),0) AS saldo_total,
                             COALESCE(SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END),0) AS despesa_total, 
                            COALESCE(SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END),0) - 
                             COALESCE(SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END),0) AS total_liquido
                             FROM transacoes
-                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id
-                           ''')
+                            INNER JOIN categorias ON transacoes.categoria_id = categorias.id WHERE transacoes.user_id = ?
+                           ''', [usuario_id])
         dados = cursor.fetchone()
         return dados
     
         
  
-    def correct_transaction (self, id_, dados : CorrigirTransacoes ,conn : sqlite3.Connection):
+    def correct_transaction (self, id_, dados : CorrigirTransacoes ,conn : sqlite3.Connection, usuario_id : int ):
         dados_dict = {chave:valor for chave,valor in  dados.model_dump().items() if valor is not None}
         place_holder = ", ".join([f'{chave} = ?' for chave in  dados_dict.keys()])
         parametros = []
         parametros.extend(list(dados_dict.values()))
         parametros.append(id_)
-        query = f"UPDATE transacoes SET {place_holder} WHERE transacoes.id = ?"
+        parametros.append(usuario_id)
+        query = f"UPDATE transacoes SET {place_holder} WHERE id = ? AND user_id = ?"
         cursor = conn.cursor()
         cursor.execute(query,parametros)
         conn.commit()

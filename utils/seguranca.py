@@ -35,7 +35,7 @@ def gerar_token_refresh (dados:dict) -> str:
     token_gerado = jwt.encode(dados_c, SECRET_KEY_REFRESH, algorithm= ALGORITMO)
     return token_gerado
 
-def validar_token_acess (token:str = Depends(oauth2), conn : sqlite3.Connection = Depends(financeiro.conect_db)) -> sqlite3.Row:
+def validar_token_acess (token:str = Depends(oauth2), conn : sqlite3.Connection = Depends(financeiro.conect_db)) -> int:
     try:
         payload = jwt.decode(token,SECRET_KEY_ACESS, algorithms=[ALGORITMO])
         usuario_id = payload.get("sub")
@@ -47,7 +47,7 @@ def validar_token_acess (token:str = Depends(oauth2), conn : sqlite3.Connection 
     dados = financeiro.search_user_by_id(id_=usuario_id, conn= conn)
     if dados is None:
         raise HTTPException(status_code=404, detail= "Este usuário não existe mais.")
-    return dados
+    return usuario_id
 
 def validar_token_refresh (token : str , financeiro : Financeiro, conn :sqlite3.Connection) -> str:
     try:
