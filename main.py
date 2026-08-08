@@ -9,7 +9,6 @@ from utils.seguranca import gerar_token_acess, gerar_token_refresh, validar_toke
 from models.token import RefreshToken, ResponseLogin, ResponseRefresh
 from models.usuarios import UsuarioLogin, UsuarioCadastro
 
-#LEMBRETE: adaptar todas rotas para selecionar/modificar apenas as transacoes especificas do usuario que está utilizando e verificar o código há erros
 
 @asynccontextmanager
 async def lifespan (app : FastAPI):
@@ -57,7 +56,7 @@ def login (dados : UsuarioLogin, conn : sqlite3.Connection = Depends(financeiro.
 @app.post("/refresh", response_model= ResponseRefresh, status_code=200)
 def refresh (token : RefreshToken, conn : sqlite3.Connection = Depends(financeiro.conect_db)):
     token_novo = validar_token_refresh(token.refresh_token, financeiro, conn)
-    return {"token access": token_novo,
+    return {"token_access": token_novo,
             "type" : "bearer"}
 
 @app.get("/")
@@ -94,7 +93,7 @@ def deletar_transacoes (id_:int , conn : sqlite3.Connection = Depends(financeiro
         id_confirmado = financeiro.search_by_id(id_=id_, conn=conn, usuario_id=usuario_atual)
         if not id_confirmado:
             raise HTTPException(status_code=404, detail= "Transação não encontrada.")
-        financeiro.remove_transaction(id_,conn)
+        financeiro.remove_transaction(id_,conn, usuario_atual)
         return 
     
 @app.patch("/transacoes/{id_}", status_code= 200, response_model= ResponseTransacoes)
@@ -102,7 +101,7 @@ def corrigir_transacao (id_:int, dados: CorrigirTransacoes , conn : sqlite3.Conn
         id_confirmado = financeiro.search_by_id(id_=id_,conn=conn, usuario_id=usuario_atual)
         if not id_confirmado:
             raise HTTPException(status_code=404, detail= "Transação não encontrada.")
-        financeiro.correct_transaction(id_=id_, dados=dados,conn=conn)
+        financeiro.correct_transaction(id_=id_, dados=dados,conn=conn, usuario_id=usuario_atual)
         id_return = financeiro.search_by_id(id_=id_,conn=conn, usuario_id=usuario_atual)
         return dict(id_return)
       

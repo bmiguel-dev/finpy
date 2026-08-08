@@ -58,7 +58,7 @@ def validar_token_refresh (token : str , financeiro : Financeiro, conn :sqlite3.
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail= " O Token é inválido ou foi expirado")
     usuario_id = int(usuario_id)
-    dados = financeiro.search_by_id(id_=usuario_id, conn=conn)
+    dados = financeiro.search_user_by_id(id_=usuario_id, conn=conn)
     if dados is None:
         raise HTTPException(status_code=404, detail= "Este usuário não existe mais.")
     token = gerar_token_acess({"sub":str(usuario_id)})

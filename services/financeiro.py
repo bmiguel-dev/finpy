@@ -108,7 +108,7 @@ class Financeiro:
         entrada_dado = entrada_dado.model_dump()
         entrada_dado["user_id"] = usuario_atual
         cursor.execute('''INSERT INTO transacoes (user_id, categoria_id, valor, descricao, data)
-                        VALUES (?, :categoria_id,:valor,:descricao,:data) ''', entrada_dado)
+                        VALUES (:user_id, :categoria_id,:valor,:descricao,:data) ''', entrada_dado)
         conn.commit()
         return cursor.lastrowid
             
