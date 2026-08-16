@@ -8,7 +8,7 @@ import sqlite3
 from fastapi.security import OAuth2PasswordBearer
 from database.database import financeiro
 
-oauth2 = OAuth2PasswordBearer(tokenUrl="/login")
+oauth2 = OAuth2PasswordBearer(tokenUrl="/usuarios/login")
 
 # token de acesso
 

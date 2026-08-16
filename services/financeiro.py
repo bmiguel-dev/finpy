@@ -9,7 +9,7 @@ class Financeiro:
     def __init__(self, db_name = 'finpy.db' ):
         self.db_name = db_name
 
-    def iniciate_table (self):
+    def initiate_table (self):
         with sqlite3.connect(self.db_name) as conn:
             self.create_table_usuarios(conn=conn)
             self.create_table_categorias(conn=conn)
