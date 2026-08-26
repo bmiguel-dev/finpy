@@ -21,7 +21,7 @@ SECRET_KEY_REFRESH = os.getenv("SECRET_KEY_REFRESH")
 VALIDADE_TOKEN_REFRESH = 7 
 VALIDADE_TOKEN_ACESS = 15
 
-def gerar_token_acess (dados:dict) -> str:
+def gerar_token_acess (dados:dict) -> str: 
     dados_c = dados.copy()
     validade = datetime.now(timezone.utc) + timedelta(minutes=VALIDADE_TOKEN_ACESS)
     dados_c.update({'exp': validade , 'type' : 'access'})
@@ -49,7 +49,7 @@ def validar_token_acess (token:str = Depends(oauth2), conn : sqlite3.Connection 
         raise HTTPException(status_code=404, detail= "Este usuário não existe mais.")
     return usuario_id
 
-def validar_token_refresh (token : str , financeiro : Financeiro, conn :sqlite3.Connection) -> str:
+def validar_token_refresh ( financeiro : Financeiro, conn :sqlite3.Connection,token : str  = Depends(oauth2)) -> str:
     try:
         payload = jwt.decode(token,SECRET_KEY_REFRESH, algorithms=[ALGORITMO])
         usuario_id = payload.get("sub")

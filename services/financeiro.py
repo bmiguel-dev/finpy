@@ -50,7 +50,7 @@ class Financeiro:
                                                                       valor REAL NOT NULL,
                                                                       descricao TEXT NOT NULL,
                                                                       data DATE NOT NULL,
-                            FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+                            FOREIGN KEY (categoria_id) REFERENCES categorias(id),
                             FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE)''')
             conn.commit() 
 
@@ -103,7 +103,7 @@ class Financeiro:
         return cursor.fetchone()
     
             
-    def adict_transaction (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection, usuario_atual: int ) -> int: #TRANSACAO ESTA SEM USER_ID
+    def adict_transaction (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection, usuario_atual: int ) -> int: 
         cursor = conn.cursor()
         entrada_dado = entrada_dado.model_dump()
         entrada_dado["user_id"] = usuario_atual

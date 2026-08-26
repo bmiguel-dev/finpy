@@ -20,7 +20,7 @@ def cadastro ( dados : UsuarioCadastro, conn : sqlite3.Connection = Depends(fina
     return dict(retorno_usuario)
 
 @router.post("/login", response_model= ResponseLogin, status_code=200)
-def login (dados : UsuarioLogin, conn : sqlite3.Connection = Depends(financeiro.conect_db) ):
+def login (dados : UsuarioLogin, conn : sqlite3.Connection = Depends(financeiro.conect_db) ) -> dict:
     usuario_id  = financeiro.user_validation(dados, conn)
     if not usuario_id:
         raise HTTPException(status_code=401, detail= "Os dados não coincidem com nenhuma conta do banco.") 
@@ -32,7 +32,7 @@ def login (dados : UsuarioLogin, conn : sqlite3.Connection = Depends(financeiro.
 
 @router.post("/refresh", response_model= ResponseRefresh, status_code=200)
 def refresh (token : RefreshToken, conn : sqlite3.Connection = Depends(financeiro.conect_db)):
-    token_novo = validar_token_refresh(token.refresh_token, financeiro, conn)
+    token_novo = validar_token_refresh(financeiro, conn,token.refresh_token)
     return {"token_access": token_novo,
             "type" : "bearer"}
 

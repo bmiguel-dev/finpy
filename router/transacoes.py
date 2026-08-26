@@ -1,4 +1,4 @@
-from fastapi import  APIRouter, HTTPException, Request, Depends,Query
+from fastapi import  APIRouter, HTTPException, Depends,Query
 from models.transacao import CriarTransacoes, CorrigirTransacoes, FiltrarTransacoes, ResponseTransacoes,ResponseMetricas,CategoriaTotal,Metricas
 import sqlite3
 from utils.seguranca import  validar_token_acess
