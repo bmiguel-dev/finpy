@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator,EmailStr
-
+from datetime import datetime
 
 class UsuarioCadastro(BaseModel):
     nome : str 
@@ -21,3 +21,9 @@ class UsuarioCadastro(BaseModel):
 class UsuarioLogin (BaseModel):
     email : EmailStr
     senha : str 
+
+class UsuarioResponse(BaseModel):
+    id : int
+    nome : str 
+    email : EmailStr 
+    criacao_login: datetime

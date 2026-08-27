@@ -1,7 +1,7 @@
 import pytest 
 import sqlite3 
 from fastapi.testclient import TestClient
-from fastapi import Request
+from fastapi import Response
 
 @pytest.fixture(scope=function)
 def bd_teste ():
@@ -38,7 +38,7 @@ def bd_teste ():
 #CLIENT (tem que retornar o yield com Test Client e overrider )
 
 @pytest.fixture(scope=function)
-def client(bd_teste) -> TestClient:
+def client(bd_teste):
     from database.database import financeiro as db_fin
     from main import app
     
@@ -55,24 +55,24 @@ def client(bd_teste) -> TestClient:
 
 @pytest.fixture
 def token_breno (client : TestClient ) -> dict :
-    resposta_api_cadastro : Request  = client.post("/usuarios/cadastro", json={"nome" : "Breno Miguel", "email" : "bnorodrigues07@gmail.com", "senha " : "senhateste123"})
-    resposta_api_login : Request = client.post("/usuarios/login", json= {"email" : "bnorodrigues07@gmail.com", "senha" : "senhateste123"})
+    resposta_api_cadastro : Response = client.post("/usuarios/cadastro", json={"nome" : "Breno Miguel", "email" : "bnorodrigues07@gmail.com", "senha " : "senhateste123"})
+    resposta_api_login : Response = client.post("/usuarios/login", json= {"email" : "bnorodrigues07@gmail.com", "senha" : "senhateste123"})
     return resposta_api_login.json() #aqui vai ter o token formato {{"token_access": token_access , "token_refresh": token_refresh, "type" : "bearer"}}
 
 @pytest.fixture
 def criar_transacoes_breno (client : TestClient, token_breno : token_breno ):
-    resposta_api_t1 : Request  = client.post("/transacoes/new", json={"categoria_id": 1 , "valor" : 2000, "descricao" : "Salário Estágio" , "data" : "10/08/2026"}, headers=token_breno)
-    resposta_api_t2 : Request = client.post("/transacoes/new", json={"categoria_id": 5 , "valor" : 300, "descricao" : "Ingresso cantor X" , "data" : "25/08/2026"}, headers=token_breno)
+    resposta_api_t1 : Response  = client.post("/transacoes/new", json={"categoria_id": 1 , "valor" : 2000, "descricao" : "Salário Estágio" , "data" : "10/08/2026"}, headers=token_breno)
+    resposta_api_t2 : Response = client.post("/transacoes/new", json={"categoria_id": 5 , "valor" : 300, "descricao" : "Ingresso cantor X" , "data" : "25/08/2026"}, headers=token_breno)
     return True
 
 @pytest.fixture
 def token_ana (client : TestClient ) -> dict :
-    resposta_api_cadastro : Request  = client.post("/usuarios/cadastro", json={"nome" : "Ana", "email" : "anarodrigues08@gmail.com", "senha " : "senhateste321"})
-    resposta_api_login : Request = client.post("/usuarios/login", json= {"email" : "bnorodrigues07@gmail.com", "senha" : "senhateste123"})
+    resposta_api_cadastro : Response  = client.post("/usuarios/cadastro", json={"nome" : "Ana", "email" : "anarodrigues08@gmail.com", "senha " : "senhateste321"})
+    resposta_api_login : Response = client.post("/usuarios/login", json= {"email" : "bnorodrigues07@gmail.com", "senha" : "senhateste123"})
     return resposta_api_login.json() #aqui vai ter o token formato {{"token_access": token_access , "token_refresh": token_refresh, "type" : "bearer"}}
 
 @pytest.fixture
-def criar_transacoes_breno (client : TestClient, token_ana : token_ana ) :
-    resposta_api_t1 : Request  = client.post("/transacoes/new", json={"categoria_id": 1 , "valor" : 400, "descricao" : "mesada" , "data" : "12/08/2026"}, headers=token_ana)
-    resposta_api_t2 : Request = client.post("/transacoes/new", json={"categoria_id": 5 , "valor" : 200, "descricao" : "sapato" , "data" : "23/08/2026"}, headers=token_ana)
+def criar_transacoes_ana (client : TestClient, token_ana : token_ana ) :
+    resposta_api_t1 : Response  = client.post("/transacoes/new", json={"categoria_id": 1 , "valor" : 400, "descricao" : "mesada" , "data" : "12/08/2026"}, headers=token_ana)
+    resposta_api_t2 : Response = client.post("/transacoes/new", json={"categoria_id": 5 , "valor" : 200, "descricao" : "sapato" , "data" : "23/08/2026"}, headers=token_ana)
     return True

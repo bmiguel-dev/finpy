@@ -11,14 +11,14 @@ class Financeiro:
 
     def initiate_table (self):
         with sqlite3.connect(self.db_name) as conn:
-            self.create_table_usuarios(conn=conn)
-            self.create_table_categorias(conn=conn)
-            self.create_table_transacoes(conn=conn)
-            self.create_idx_category(conn=conn)
-            self.create_idx_date(conn=conn)
-            self.create_idx_id_user(conn=conn) 
+            self.cria_tabela_usuarios(conn=conn)
+            self.cria_tabela_categorias(conn=conn)
+            self.cria_tabela_transacoes(conn=conn)
+            self.cria_idx_category(conn=conn)
+            self.cria_idx_date(conn=conn)
+            self.cria_idx_id_user(conn=conn) 
 
-    def conect_db(self):
+    def conexao_bd(self):
         banco = sqlite3.connect(self.db_name)
         banco.execute("PRAGMA foreign_keys = ON;")
         banco.row_factory = sqlite3.Row
@@ -27,13 +27,13 @@ class Financeiro:
         finally:
             banco.close() 
 
-    def create_table_categorias(self,conn : sqlite3.Connection):
+    def cria_tabela_categorias(self,conn : sqlite3.Connection):
             cursor = conn.cursor()
             cursor.execute(''' CREATE TABLE IF NOT EXISTS categorias (id INTEGER NOT NULL PRIMARY KEY, nome TEXT NOT NULL UNIQUE, tipo INTEGER NOT NULL)''')
             cursor.executemany('''INSERT OR IGNORE INTO categorias (id, nome, tipo) VALUES (?,?,?)''', Categoria.lista_categorias() )
             conn.commit()
 
-    def create_table_usuarios (self, conn : sqlite3.Connection):
+    def cria_tabela_usuarios (self, conn : sqlite3.Connection):
                 cursor = conn.cursor() 
                 cursor.execute(''' CREATE TABLE IF NOT EXISTS usuarios (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                                           nome TEXT UNIQUE NOT NULL,
@@ -42,7 +42,7 @@ class Financeiro:
                                                                           criacao_login DATETIME DEFAULT CURRENT_TIMESTAMP)''')
                 conn.commit() 
     
-    def create_table_transacoes (self, conn : sqlite3.Connection):
+    def cria_tabela_transacoes (self, conn : sqlite3.Connection):
             cursor = conn.cursor() 
             cursor.execute(''' CREATE TABLE IF NOT EXISTS transacoes (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                                       user_id INTEGER,
@@ -54,22 +54,22 @@ class Financeiro:
                             FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE)''')
             conn.commit() 
 
-    def create_idx_category (self, conn : sqlite3.Connection ):
+    def cria_idx_category (self, conn : sqlite3.Connection ):
         cursor = conn.cursor()
         cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_categoria_id ON transacoes(categoria_id)''')
         conn.commit()
         
-    def create_idx_date (self, conn : sqlite3.Connection ):
+    def cria_idx_date (self, conn : sqlite3.Connection ):
         cursor = conn.cursor()
         cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes(data)''')
         conn.commit()
 
-    def create_idx_id_user (self, conn : sqlite3.Connection ):
+    def cria_idx_id_user (self, conn : sqlite3.Connection ):
             cursor = conn.cursor()
             cursor.execute('''CREATE INDEX IF NOT EXISTS idx_transacoes_user_id ON transacoes(user_id)''')
             conn.commit()
 
-    def create_user (self, entrada_dado : UsuarioCadastro,  conn:sqlite3.Connection):
+    def cria_usuario (self, entrada_dado : UsuarioCadastro,  conn:sqlite3.Connection):
         cursor = conn.cursor()
         dados = entrada_dado.model_dump()
         dados['senha'] = criar_hash(entrada_dado.senha)
@@ -77,7 +77,7 @@ class Financeiro:
         conn.commit()
         return cursor.lastrowid
 
-    def user_validation (self, dados : UsuarioLogin, conn : sqlite3.Connection) -> int | bool: #email e senha
+    def validacao_usuario (self, dados : UsuarioLogin, conn : sqlite3.Connection) -> int | bool: #email e senha
         cursor = conn.cursor() 
         cursor.execute(''' SELECT id , senha FROM usuarios WHERE email = ?''', [dados.email])
         resultado = cursor.fetchone()
@@ -91,19 +91,19 @@ class Financeiro:
             return False
         return id_user
 
-    def search_user_by_email (self, dados : UsuarioCadastro, conn : sqlite3.Connection ):
+    def procurar_usuario_pelo_email (self, dados : UsuarioCadastro, conn : sqlite3.Connection ):
         email = dados.email
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM usuarios WHERE email = ?", [email])
         return cursor.fetchone()
     
-    def search_user_by_id(self, id_: int, conn: sqlite3.Connection) -> sqlite3.Row:
+    def procurar_usuario_pelo_id(self, id_: int, conn: sqlite3.Connection) -> sqlite3.Row:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM usuarios WHERE id = ?", [id_])
         return cursor.fetchone()
     
             
-    def adict_transaction (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection, usuario_atual: int ) -> int: 
+    def adiciona_transacao (self, entrada_dado : CriarTransacoes, conn : sqlite3.Connection, usuario_atual: int ) -> int: 
         cursor = conn.cursor()
         entrada_dado = entrada_dado.model_dump()
         entrada_dado["user_id"] = usuario_atual
@@ -112,12 +112,12 @@ class Financeiro:
         conn.commit()
         return cursor.lastrowid
             
-    def remove_transaction (self, id:int , conn : sqlite3.Connection, usuario_id):
+    def remove_transacao (self, id:int , conn : sqlite3.Connection, usuario_id):
         cursor = conn.cursor()
         cursor.execute('''DELETE FROM transacoes WHERE id = ? AND user_id  = ?''', [id,usuario_id])
         conn.commit()
 
-    def search_by_filter (self,categorias:list[int], filtro : FiltrarTransacoes , conn : sqlite3.Connection, usuario_id : int) -> list[sqlite3.Row] | None:
+    def procurar_pelo_filtro (self,categorias:list[int], filtro : FiltrarTransacoes , conn : sqlite3.Connection, usuario_id : int) -> list[sqlite3.Row] | None:
         cursor = conn.cursor()
         dados = filtro.model_dump()
         print("DEBUG filtro recebido:", dados)
@@ -147,7 +147,7 @@ class Financeiro:
   
     
 
-    def search_by_id (self, id_: int , conn : sqlite3.Connection, usuario_id : int):
+    def procurar_pelo_id (self, id_: int , conn : sqlite3.Connection, usuario_id : int):
         cursor = conn.cursor()
         cursor.execute('''SELECT transacoes.*  FROM transacoes
                            WHERE transacoes.id = ? AND transacoes.user_id = ?''', [id_, usuario_id] )
@@ -155,7 +155,7 @@ class Financeiro:
         return dado
     
     
-    def all_cat_values (self , conn : sqlite3.Connection, usuario_id: int) -> list[sqlite3.Row]:
+    def valores_totais_categorias (self , conn : sqlite3.Connection, usuario_id: int) -> list[sqlite3.Row]:
         cursor = conn.cursor() 
         cursor.execute('''SELECT SUM(transacoes.valor) AS total_valores, categorias.nome AS nome_categoria
                               FROM transacoes INNER JOIN categorias ON transacoes.categoria_id = categorias.id WHERE transacoes.user_id = ?
@@ -163,7 +163,7 @@ class Financeiro:
         dados = cursor.fetchall()
         return dados
     
-    def get_balance_and_expense (self , conn : sqlite3.Connection, usuario_id) -> sqlite3.Row | None:
+    def calculo_despesa_lucro (self , conn : sqlite3.Connection, usuario_id) -> sqlite3.Row | None:
         cursor = conn.cursor()
         cursor.execute('''SELECT COALESCE(SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END),0) AS saldo_total,
                             COALESCE(SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END),0) AS despesa_total, 
@@ -177,7 +177,7 @@ class Financeiro:
     
         
  
-    def correct_transaction (self, id_, dados : CorrigirTransacoes ,conn : sqlite3.Connection, usuario_id : int ):
+    def corrige_transação (self, id_, dados : CorrigirTransacoes ,conn : sqlite3.Connection, usuario_id : int ):
         dados_dict = {chave:valor for chave,valor in  dados.model_dump().items() if valor is not None}
         place_holder = ", ".join([f'{chave} = ?' for chave in  dados_dict.keys()])
         parametros = []

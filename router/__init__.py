@@ -1,2 +1,2 @@
-from usuarios import * 
-from transacoes import *
+from .usuarios import * 
+from .transacoes import *
