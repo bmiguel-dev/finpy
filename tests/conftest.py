@@ -1,7 +1,7 @@
 import pytest 
 import sqlite3 
 from fastapi.testclient import TestClient
-from fastapi import Response
+from httpx import Response
 
 @pytest.fixture(scope=function)
 def bd_teste ():
@@ -69,6 +69,7 @@ def criar_transacoes_breno (client : TestClient, token_breno : token_breno ):
 def token_ana (client : TestClient ) -> dict :
     resposta_api_cadastro : Response  = client.post("/usuarios/cadastro", json={"nome" : "Ana", "email" : "anarodrigues08@gmail.com", "senha " : "senhateste321"})
     resposta_api_login : Response = client.post("/usuarios/login", json= {"email" : "bnorodrigues07@gmail.com", "senha" : "senhateste123"})
+    r =   resposta_api_login.json()
     return resposta_api_login.json() #aqui vai ter o token formato {{"token_access": token_access , "token_refresh": token_refresh, "type" : "bearer"}}
 
 @pytest.fixture

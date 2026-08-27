@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from fastapi import Response
+from httpx import Response
 class TestCriar: 
     def test_criar_transacao_breno(self,client : TestClient, token_breno : dict ):
         r : Response = client.post("/transacoes/new",  json={"categoria_id": 1 , "valor" : 2000, "descricao" : "Salário Estágio" , "data" : "10/08/2026"},
