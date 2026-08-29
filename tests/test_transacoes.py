@@ -2,16 +2,16 @@ from fastapi.testclient import TestClient
 from httpx import Response
 
 class TestCriar: 
-    def test_criar_transacao_breno(self,client : TestClient, token_breno : dict ):
-        r : Response = client.post("/transacoes/new",  json={"categoria_id": 1 , "valor" : 2000, "descricao" : "Salário Estágio" , "data" : "10/08/2026"},
-                     headers= {"Authorization": f"Bearer {token_breno['token_access']}"})
+    def test_criar_transacao_breno(self,client : TestClient, token_breno : str):
+        r : Response = client.post("/transacoes/new",  json={"categoria_id": 1 , "valor" : 2000, "descricao" : "Salário Estágio" , "data" : "2026-08-10"},
+                     headers=token_breno)
         #return = json com id :int valor: float categoria_id: int descricao: str data: str(ResponseTransacoes)
         assert r.status_code == 201
         assert "id" in r.json()
         assert r.json()["valor"] == 2000
 
-    def test_criar_transacao_ana(self,client : TestClient, token_ana : dict ):
-            r : Response = client.post("/transacoes/new", json={"categoria_id": 1 , "valor" : 400, "descricao" : "mesada" , "data" : "12/08/2026"},
+    def test_criar_transacao_ana(self,client : TestClient, token_ana : str):
+            r : Response = client.post("/transacoes/new", json={"valor" : 400, "categoria_id": 1 , "descricao" : "mesada" , "data" : "2026-08-12"},
                                        headers=token_ana)
             
             assert r.status_code == 201
@@ -70,13 +70,15 @@ class TestListar:
     def test_filtro_data_inicio(self,client : TestClient, token_breno, criar_transacoes_breno):
         r : Response = client.get("/transacoes/?d_inicio=2026-07-01", headers=token_breno)
         assert r.status_code == 200
+        
 
     def test_filtro_data_fim(self, client : TestClient, token_breno, criar_transacoes_breno):
         r: Response  = client.get("/transacoes/?d_fim=2026-07-31", headers=token_breno)
         assert r.status_code == 200
+        
 
     def test_filtro_intervalo_datas(self, client : TestClient, token_breno, criar_transacoes_breno):
-        r: Response  = client.get("/transacoes/?d_inicio=2026-07-01&d_fim=2026-07-31",
+        r: Response  = client.get("/transacoes/?d_inicio=2026-07-01&d_fim=2026-08-28",
                        headers=token_breno)
         assert r.status_code == 200
         assert len(r.json()) == 1
