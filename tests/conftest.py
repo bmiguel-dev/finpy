@@ -3,10 +3,10 @@ import sqlite3
 from fastapi.testclient import TestClient
 from httpx import Response
 
-@pytest.fixture(scope=function)
+@pytest.fixture(scope="function")
 def bd_teste ():
     from enums import Categoria
-    conn = sqlite3.connect(":memory:")
+    conn = sqlite3.connect(":memory:",check_same_thread=False)
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -15,8 +15,11 @@ def bd_teste ():
                                                                           email TEXT UNIQUE NOT NULL,
                                                                           senha TEXT NOT NULL,
                                                                           criacao_login DATETIME DEFAULT CURRENT_TIMESTAMP);
+
                             CREATE TABLE IF NOT EXISTS categorias (id INTEGER NOT NULL PRIMARY KEY,
-                                                                        nome TEXT NOT NULL UNIQUE, tipo INTEGER NOT NULL;
+                                                                        nome TEXT NOT NULL UNIQUE, tipo INTEGER NOT NULL);
+
+
                             CREATE TABLE IF NOT EXISTS transacoes (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                                         user_id INTEGER,
                                                                         categoria_id INTEGER,
@@ -24,10 +27,14 @@ def bd_teste ():
                                                                         descricao TEXT NOT NULL,
                                                                         data DATE NOT NULL,
                                                         FOREIGN KEY (categoria_id) REFERENCES categorias(id),
-                                                        FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE));
+                                                        FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE);
+
                                                         CREATE INDEX IF NOT EXISTS idx_transacoes_categoria_id ON transacoes(categoria_id);
+
                                                         CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes(data);
+
                                                         CREATE INDEX IF NOT EXISTS idx_transacoes_user_id ON transacoes(user_id)''')
+    
     cursor.executemany('''INSERT OR IGNORE INTO categorias (id, nome, tipo) VALUES (?,?,?)''', Categoria.lista_categorias())
     conn.commit()
     try:
@@ -37,15 +44,15 @@ def bd_teste ():
 
 #CLIENT (tem que retornar o yield com Test Client e overrider )
 
-@pytest.fixture(scope=function)
+@pytest.fixture(scope="function")
 def client(bd_teste):
     from database.database import financeiro as db_fin
     from main import app
     
     def override_bd():
-        yield bd_teste()
+        yield bd_teste
 
-    app.dependency_overrides[db_fin.conect_db] = override_bd
+    app.dependency_overrides[db_fin.conexao_bd] = override_bd
 
 
     with TestClient(app) as api:
@@ -55,7 +62,7 @@ def client(bd_teste):
 
 @pytest.fixture
 def cadastro_breno (client : TestClient) -> dict:
-    resposta_api_cadastro : Response = client.post("/usuarios/cadastro", json={"nome" : "Breno Miguel", "email" : "bnorodrigues07@gmail.com", "senha " : "senhateste123"})
+    resposta_api_cadastro : Response = client.post("/usuarios/cadastro", json={"nome" : "Breno Miguel", "email" : "bnorodrigues07@gmail.com", "senha" : "senhateste123"})
     return resposta_api_cadastro.json()
 
 @pytest.fixture
@@ -71,7 +78,7 @@ def criar_transacoes_breno (client : TestClient, token_breno ):
 
 @pytest.fixture
 def token_ana (client : TestClient ) -> dict :
-    resposta_api_cadastro : Response  = client.post("/usuarios/cadastro", json={"nome" : "Ana", "email" : "anarodrigues08@gmail.com", "senha " : "senhateste321"})
+    resposta_api_cadastro : Response  = client.post("/usuarios/cadastro", json={"nome" : "Ana", "email" : "anarodrigues08@gmail.com", "senha" : "senhateste321"})
     resposta_api_login : Response = client.post("/usuarios/login", json= {"email" : "bnorodrigues07@gmail.com", "senha" : "senhateste123"})#aqui vai ter o token formato {{"token_access": token_access , "token_refresh": token_refresh, "type" : "bearer"}}
     r =   resposta_api_login.json()["token_acess"]   # str token
     return {"Authorization": f"Bearer {r}"} 

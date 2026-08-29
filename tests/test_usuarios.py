@@ -9,6 +9,7 @@ class TestCadastro:
             "email": "breno@teste.com",
             "senha": "senha123"
         })
+        print(r.json())
         assert r.status_code == 201
         assert r.json()["nome"] == "Breno Miguel"
         assert r.json()["email"] == "breno@teste.com"
