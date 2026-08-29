@@ -15,7 +15,7 @@ class TestCadastro:
         assert r.json()["email"] == "breno@teste.com"
         
 
-    def test_cadastro_email_duplicado(self, client : TestClient, usuario_breno):
+    def test_cadastro_email_duplicado(self, client : TestClient, cadastro_breno):
         r = client.post("/usuarios/cadastro", json={
             "nome": "Outro Nome",
             "email": "breno@teste.com",   # mesmo email
