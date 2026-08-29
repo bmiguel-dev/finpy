@@ -62,11 +62,11 @@ def client(bd_teste):
 
 @pytest.fixture
 def cadastro_breno (client : TestClient) -> dict:
-    resposta_api_cadastro : Response = client.post("/usuarios/cadastro", json={"nome" : "Breno Miguel", "email" : "breno@teste.com", "senha" : "senhateste123"})
+    resposta_api_cadastro : Response = client.post("/usuarios/cadastro", json={"nome" : "Breno Miguel", "email" : "breno@teste.com", "senha" : "senha123"})
     return resposta_api_cadastro.json()
 
 @pytest.fixture
-def token_breno (client : TestClient , cadastro_breno ) -> dict :
+def token_breno (client : TestClient , cadastro_breno ) -> str :
     resposta_api_login : Response = client.post("/usuarios/login", json= {"email" : "breno@teste.com", "senha" : "senhateste123"}) #aqui vai ter o token formato {{"token_access": token_access , "token_refresh": token_refresh, "type" : "bearer"}}
     r =   resposta_api_login.json()["token_acess"]  # str token
     return {"Authorization": f"Bearer {r}"}  
