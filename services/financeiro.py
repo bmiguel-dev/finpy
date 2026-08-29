@@ -20,7 +20,7 @@ class Financeiro:
 
     def conexao_bd(self):
         banco = sqlite3.connect(self.db_name)
-        banco.execute("PRAGMA foreign_keys = ON;")
+        banco.execute("PRAGMA foreign_keys = ON;")   
         banco.row_factory = sqlite3.Row
         try:
             yield banco
