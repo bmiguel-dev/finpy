@@ -1,10 +1,6 @@
 from fastapi.testclient import TestClient
 
 class TestIsolamento:
-    """
-    Garante que um usuário nunca acessa dados de outro.
-    Esses testes são os mais críticos de segurança.
-    """
 
     def test_listar_so_proprias_transacoes(self, client : TestClient, token_breno, token_ana):
         # Breno cria transação

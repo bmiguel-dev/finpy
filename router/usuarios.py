@@ -8,13 +8,13 @@ from database.database import financeiro
 
 router = APIRouter(prefix="/usuarios", tags= ["Usuários"])
 
-
+#mudar injeção de dependencias.
 
 @router.post("/cadastro", status_code=201, response_model=UsuarioResponse)
 def cadastro ( dados : UsuarioCadastro, conn : sqlite3.Connection = Depends(financeiro.conexao_bd)):
     email_existente = financeiro.procurar_usuario_pelo_email(dados=dados, conn=conn)
     if email_existente:
-        raise HTTPException(status_code=409, detail= "Email já cadastrado.")
+        raise HTTPException(status_code=409, detail= "Email já cadastrado.")  
     usuario_cadastrado = financeiro.cria_usuario(entrada_dado=dados, conn=conn)
     retorno_usuario = financeiro.procurar_usuario_pelo_id(usuario_cadastrado, conn)
     return dict(retorno_usuario)

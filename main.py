@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from database.database import financeiro
+from database.database import database
 import sqlite3
 from pydantic import ValidationError
 from contextlib import asynccontextmanager
@@ -10,7 +10,7 @@ from router.transacoes import router as router_transacoes
 
 @asynccontextmanager
 async def lifespan (app : FastAPI):
-    financeiro.initiate_table()
+    database.initiate_table()
     yield 
 
 app = FastAPI(lifespan=lifespan)

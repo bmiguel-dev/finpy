@@ -20,8 +20,8 @@ def exibir_metricas(conn : sqlite3.Connection = Depends(financeiro.conexao_bd), 
 
 @router.post("/new",status_code=201,response_model=ResponseTransacoes)
 def criar_transacao (transacoes: CriarTransacoes, conn : sqlite3.Connection = Depends(financeiro.conexao_bd), usuario_atual : int = Depends(validar_token_acess)):
-    transacao_adicionada  = financeiro.adiciona_transacao(transacoes,conn, usuario_atual=usuario_atual)
-    response_transacao = financeiro.procurar_pelo_id(transacao_adicionada,conn,usuario_atual)
+    transacao_adicionada  = financeiro.adiciona_transacao(transacoes, usuario_atual=usuario_atual)
+    response_transacao = financeiro.procurar_pelo_id(transacao_adicionada,usuario_atual)
     return dict(response_transacao)
 
 @router.get("/{id_}",  response_model=ResponseTransacoes)

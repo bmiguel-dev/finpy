@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import jwt
 from datetime import timedelta, timezone, datetime
 from fastapi import HTTPException, Depends
-from services.financeiro import Financeiro
+from services.usuarios import Financeiro
 import sqlite3
 from fastapi.security import OAuth2PasswordBearer
 from database.database import financeiro
