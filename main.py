@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from database.database import database
-import sqlite3
-from pydantic import ValidationError
 from contextlib import asynccontextmanager
 from router.usuarios import router as router_usuarios
 from router.transacoes import router as router_transacoes
+from services.erros import TransacaoNaoEncontrada, EmailJaExiste,EmailNaoEncontrado,SenhaNaoCompativel
+import sqlite3
+from pydantic import ValidationError
+from utils.exceptions_handler import *
 
 
 @asynccontextmanager
@@ -15,13 +16,12 @@ async def lifespan (app : FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.exception_handler(sqlite3.Error)
-def erro_banco (requisicao : Request, erro : sqlite3.Error ):
-    return JSONResponse(status_code=500, content= {"erro": str(erro) })
-
-@app.exception_handler(ValidationError)
-def erro_validation (requisicicao: Request, erro: ValidationError):
-    return JSONResponse(status_code=422 , content={"erro": "Dados Inválidos", "detalhes": [{"campo": e["loc"][-1], "mensagem":e["msg"].replace("Value error, ", ""), "Enviado": e.get("input")} for e in erro.errors()]})
+app.add_exception_handler(TransacaoNaoEncontrada,erro_transacao_nao_encontrada)
+app.add_exception_handler(EmailNaoEncontrado,erro_email_nao_encontrado)
+app.add_exception_handler(EmailJaExiste, erro_email_existe)
+app.add_exception_handler(SenhaNaoCompativel,erro_senha_errada)
+app.add_exception_handler(ValidationError, erro_validation)
+app.add_exception_handler(sqlite3.Error, erro_banco)
 
 app.include_router(router=router_usuarios)
 app.include_router(router=router_transacoes)
