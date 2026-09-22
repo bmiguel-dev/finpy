@@ -10,3 +10,11 @@ class EmailNaoEncontrado(Exception):
 class SenhaNaoCompativel(Exception):
     pass
 
+class UsuarioInexistente(Exception):
+    pass
+
+class TokenSemIdentificacao(Exception):
+    pass
+
+class TokenInvalido(Exception):
+    pass

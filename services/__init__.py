@@ -1,3 +1,3 @@
 from .transacoes import ServiceTransacoes
 from .usuarios import ServiceUsuarios
-from .erros import SenhaNaoCompativel,TransacaoNaoEncontrada,EmailNaoEncontrado,EmailJaExiste
+from ..utils.erros import SenhaNaoCompativel,TransacaoNaoEncontrada,EmailNaoEncontrado,EmailJaExiste
