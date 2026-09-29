@@ -15,15 +15,15 @@ def erro_transacao_nao_encontrada(requisicicao: Request, erro: TransacaoNaoEncon
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND , content={"erro":str(erro)})
 
 
-def erro_email_existe (requisicao : Request, erro : EmailJaExiste): # 400
+def erro_email_existe (requisicao : Request, erro : EmailJaExiste): # 409 **
+    return JSONResponse(status_code=status.HTTP_409_CONFLICT, content= {"erro": str(erro) })
+
+
+def erro_email_nao_encontrado(requisicao : Request, erro : EmailNaoEncontrado ): #404 **
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content= {"erro": str(erro) })
 
 
-def erro_email_nao_encontrado(requisicao : Request, erro : EmailNaoEncontrado ): #404
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content= {"erro": str(erro) })
-
-
-def erro_senha_errada (requisicao : Request, erro : SenhaNaoCompativel ):#400
+def erro_senha_errada (requisicao : Request, erro : SenhaNaoCompativel ):#400**
     return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content= {"erro": str(erro) })
 
 def erro_token_invalido ( requisicao : Request , erro : TokenInvalido): #401
@@ -31,3 +31,4 @@ def erro_token_invalido ( requisicao : Request , erro : TokenInvalido): #401
 
 def erro_token_sem_sub (requisicao : Request, erro: TokenSemIdentificacao):#401
     return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content= {"erro": str(erro) })
+

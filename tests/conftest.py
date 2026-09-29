@@ -46,13 +46,13 @@ def bd_teste ():
 
 @pytest.fixture(scope="function")
 def client(bd_teste):
-    from database.database import financeiro as db_fin
+    from database.database import database as db_fin  
     from main import app
     
     def override_bd():
         yield bd_teste
 
-    app.dependency_overrides[db_fin.conexao_bd] = override_bd
+    app.dependency_overrides[db_fin.conexao_bd] = override_bd # *anotar no caderno* 
 
 
     with TestClient(app) as api:

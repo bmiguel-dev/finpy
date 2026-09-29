@@ -215,15 +215,15 @@ class FiltrarTransacoes (BaseModel):
         return dt
 
 class CategoriaTotal(BaseModel):
-    total_valores : int
+    total_valores : float   
     nome_categoria : str
 
     model_config = {"from_attributes": True}
 
 class Metricas (BaseModel):
-    saldo_total  : int
-    despesa_total : int
-    total_liquido : int
+    saldo_total  : float
+    despesa_total : float
+    total_liquido : float
 
     model_config = {"from_attributes": True}
 

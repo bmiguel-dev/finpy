@@ -45,7 +45,7 @@ def validar_token_acess (token:str = Depends(oauth2) ) -> int:
     return usuario_id
     
 
-def validar_token_refresh (   token : str  = Depends(oauth2)) -> str:
+def validar_token_refresh ( token : str ) -> str: # Não se usa OAUTH2 pois ele reconhece apenas o token acess!
     try:
         payload = jwt.decode(token,SECRET_KEY_REFRESH, algorithms=[ALGORITMO])
         usuario_id = payload.get("sub")

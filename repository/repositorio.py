@@ -1,16 +1,15 @@
 import sqlite3
 from models import *
-from database import database
 
 class RepositorioUsuarios:
     def __init__(self, conn : sqlite3.Connection ):
         self.conn = conn 
     
     
-    def cria_usuario (self, entrada_dado : UsuarioCadastro, hash : str):
+    def cria_usuario (self, entrada_dado : UsuarioCadastro, senha_hash : str):
         cursor = self.conn.cursor()
         dados = entrada_dado.model_dump()
-        dados['senha'] = hash
+        dados['senha'] = senha_hash
         cursor.execute('''INSERT INTO usuarios (nome, email, senha) VALUES (:nome,:email,:senha)''', dados )
         self.conn.commit()
         return cursor.lastrowid
@@ -22,7 +21,7 @@ class RepositorioUsuarios:
         cursor.execute("SELECT * FROM usuarios WHERE email = ?", [email])
         return cursor.fetchone()
         
-    def procurar_usuario_pelo_id(self, id_: int, conn: sqlite3.Connection) -> sqlite3.Row:
+    def procurar_usuario_pelo_id(self, id_: int) -> sqlite3.Row:
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM usuarios WHERE id = ?", [id_])
         return cursor.fetchone()
@@ -41,12 +40,12 @@ class RepositorioTransacoes:
         self.conn.commit()
         return cursor.lastrowid
                 
-    def remove_transacao (self, id:int ,  usuario_id):
+    def remove_transacao (self, id:int ,  usuario_id : int):
         cursor = self.conn.cursor()
         cursor.execute('''DELETE FROM transacoes WHERE id = ? AND user_id  = ?''', [id,usuario_id])
         self.conn.commit()
     
-    def procurar_pelo_filtro (self,categorias:list[int], filtro : FiltrarTransacoes , usuario_id : int) -> list[sqlite3.Row] | None:
+    def procurar_pelo_filtro (self,categorias:list[int], filtro : FiltrarTransacoes , usuario_id : int) -> list[sqlite3.Row] | list:
         cursor = self.conn.cursor()
         dados = filtro.model_dump()
         data_i = dados.get('d_inicio')
@@ -105,7 +104,7 @@ class RepositorioTransacoes:
         
             
      
-    def corrige_transação (self, id_, dados : CorrigirTransacoes , usuario_id : int ) -> bool:
+    def corrige_transação (self, id_ : int, dados : CorrigirTransacoes , usuario_id : int ) -> bool:
         dados_dict = {chave:valor for chave,valor in  dados.model_dump().items() if valor is not None}
         place_holder = ", ".join([f'{chave} = ?' for chave in  dados_dict.keys()])
         parametros = []

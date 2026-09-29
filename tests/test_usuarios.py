@@ -65,14 +65,14 @@ class TestLogin:
             "email": "breno@teste.com",
             "senha": "senhaerrada"
         })
-        assert r.status_code == 401
+        assert r.status_code == 400
 
     def test_login_email_inexistente(self, client : TestClient):
         r = client.post("/usuarios/login", json={
             "email": "naoexiste@teste.com",
             "senha": "senha123"
         })
-        assert r.status_code == 401
+        assert r.status_code == 404
 
 
 class TestRefresh:

@@ -1,18 +1,13 @@
 from fastapi import  APIRouter,  Depends
 from models.usuarios import UsuarioCadastro, UsuarioLogin, UsuarioResponse
 from models.token import RefreshToken, ResponseRefresh,ResponseLogin
-import sqlite3
 from utils.seguranca import  validar_token_refresh, gerar_token_acess,gerar_token_refresh
-from database import database
 from services import ServiceUsuarios
-from repository import RepositorioUsuarios
+from depends import get_service_usuario
 
 
 router = APIRouter(prefix="/usuarios", tags= ["Usuários"])
 
-def get_service_usuario(conn : sqlite3.Connection = Depends(database.conexao_bd)) -> ServiceUsuarios: # vai passar a conexao pro repositorio e passar o repositorio pro service
-    repositorio = RepositorioUsuarios(conn=conn) 
-    return ServiceUsuarios(repositorio=repositorio)
 
 
 #mudar injeção de dependencias.
@@ -34,7 +29,7 @@ def login (dados : UsuarioLogin, service : ServiceUsuarios = Depends(get_service
 
 @router.post("/refresh", response_model= ResponseRefresh, status_code=200)
 def refresh (token : RefreshToken, service : ServiceUsuarios = Depends(get_service_usuario) ):
-    usuario_id = validar_token_refresh(service,token.refresh_token) #vai realizar a validação do token e retorna o id do usuario(int)
+    usuario_id = validar_token_refresh(token=token.refresh_token) #vai realizar a validação do token e retorna o id do usuario(int)
     service.verificar_usuario_id(usuario_id) # verifica se o usuario ainda existe, e retorna um erro caso nao exista.
     token = gerar_token_acess({"sub":str(usuario_id)}) # o sub é uma convenção utilizar como uma str
     return {"token_access": token,
