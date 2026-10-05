@@ -6,7 +6,7 @@ class RepositorioUsuarios:
         self.conn = conn 
     
     
-    def cria_usuario (self, entrada_dado : UsuarioCadastro, senha_hash : str):
+    def criar_usuario (self, entrada_dado : UsuarioCadastro, senha_hash : str) -> int:
         cursor = self.conn.cursor()
         dados = entrada_dado.model_dump()
         dados['senha'] = senha_hash
@@ -15,13 +15,13 @@ class RepositorioUsuarios:
         return cursor.lastrowid
     
     
-    def procurar_usuario_pelo_email (self, dados : UsuarioCadastro | UsuarioLogin ) -> sqlite3.Row:
+    def procurar_usuario_pelo_email (self, dados : UsuarioCadastro | UsuarioLogin ) -> sqlite3.Row | None:
         email = dados.email
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM usuarios WHERE email = ?", [email])
         return cursor.fetchone()
         
-    def procurar_usuario_pelo_id(self, id_: int) -> sqlite3.Row:
+    def procurar_usuario_pelo_id(self, id_: int) -> sqlite3.Row | None :
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM usuarios WHERE id = ?", [id_])
         return cursor.fetchone()
@@ -31,7 +31,7 @@ class RepositorioTransacoes:
     def __init__(self, conn : sqlite3.Connection ):
         self.conn = conn 
                 
-    def adiciona_transacao (self, entrada_dado : CriarTransacoes,  usuario_atual: int ) -> int: 
+    def adicionar_transacao (self, entrada_dado : CriarTransacoes,  usuario_atual: int ) -> int: 
         cursor = self.conn.cursor()
         entrada_dado = entrada_dado.model_dump()
         entrada_dado["user_id"] = usuario_atual
@@ -40,12 +40,12 @@ class RepositorioTransacoes:
         self.conn.commit()
         return cursor.lastrowid
                 
-    def remove_transacao (self, id:int ,  usuario_id : int):
+    def remover_transacao (self, id:int ,  usuario_id : int):
         cursor = self.conn.cursor()
         cursor.execute('''DELETE FROM transacoes WHERE id = ? AND user_id  = ?''', [id,usuario_id])
         self.conn.commit()
     
-    def procurar_pelo_filtro (self,categorias:list[int], filtro : FiltrarTransacoes , usuario_id : int) -> list[sqlite3.Row] | list:
+    def procurar_transacao_filtrada (self,categorias:list[int], filtro : FiltrarTransacoes , usuario_id : int) -> list[sqlite3.Row] | list:
         cursor = self.conn.cursor()
         dados = filtro.model_dump()
         data_i = dados.get('d_inicio')
@@ -82,7 +82,7 @@ class RepositorioTransacoes:
         return dado
         
         
-    def valores_totais_categorias (self , usuario_id: int) -> list[sqlite3.Row]:
+    def calcular_valores_totais_categorias (self , usuario_id: int) -> list[sqlite3.Row]:
             cursor = self.conn.cursor() 
             cursor.execute('''SELECT SUM(transacoes.valor) AS total_valores, categorias.nome AS nome_categoria
                                   FROM transacoes INNER JOIN categorias ON transacoes.categoria_id = categorias.id WHERE transacoes.user_id = ?
@@ -90,7 +90,7 @@ class RepositorioTransacoes:
             dados = cursor.fetchall()
             return dados
         
-    def calculo_despesa_lucro (self , usuario_id) -> sqlite3.Row | None:
+    def calcular_despesa_lucro (self , usuario_id) -> sqlite3.Row | None:
             cursor = self.conn.cursor()
             cursor.execute('''SELECT COALESCE(SUM(CASE WHEN categorias.tipo = 1 THEN transacoes.valor ELSE 0 END),0) AS saldo_total,
                                 COALESCE(SUM(CASE WHEN categorias.tipo = 2 THEN transacoes.valor ELSE 0 END),0) AS despesa_total, 
@@ -104,7 +104,7 @@ class RepositorioTransacoes:
         
             
      
-    def corrige_transação (self, id_ : int, dados : CorrigirTransacoes , usuario_id : int ) -> bool:
+    def corrigir_transação (self, id_ : int, dados : CorrigirTransacoes , usuario_id : int ) -> bool:
         dados_dict = {chave:valor for chave,valor in  dados.model_dump().items() if valor is not None}
         place_holder = ", ".join([f'{chave} = ?' for chave in  dados_dict.keys()])
         parametros = []

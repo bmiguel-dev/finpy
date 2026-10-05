@@ -14,12 +14,12 @@ router = APIRouter(prefix="/usuarios", tags= ["Usuários"])
 
 @router.post("/cadastro", status_code=201, response_model=UsuarioResponse)
 def cadastro ( dados : UsuarioCadastro, service : ServiceUsuarios = Depends(get_service_usuario) ): 
-    user = service.cadastro_service(dados)    # aqui vai criar e fazer o cadastro do usuário /  vai retornar EmailJaExistente em caso de erro | sqlite3.Row com dados do usuario cadastrado
+    user = service.cadastrar_usuario(dados)    # aqui vai criar e fazer o cadastro do usuário /  vai retornar EmailJaExistente em caso de erro | sqlite3.Row com dados do usuario cadastrado
     return dict(user)
 
 @router.post("/login", response_model= ResponseLogin, status_code=200)
 def login (dados : UsuarioLogin, service : ServiceUsuarios = Depends(get_service_usuario)  ):
-    dados_dict = service.validacao_usuario_email(dados) #verifica se o email bate/ devolve EmailNaoEncontrado em caso de erro | devolve dados do usuario da tabela em formato dict
+    dados_dict = service.verificar_email_usuario(dados) #verifica se o email bate/ devolve EmailNaoEncontrado em caso de erro | devolve dados do usuario da tabela em formato dict
     user_id = service.verificar_senha_login(dados_dict, dados )#verifica se a senha bate / devolve SenhaNaoCompativel em caso de erro | devolve o id do usuario em str
     token_access = gerar_token_acess({'sub' : user_id})
     token_refresh = gerar_token_refresh({'sub': user_id})

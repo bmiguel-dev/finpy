@@ -10,15 +10,15 @@ class ServiceUsuarios:
 
     
 
-    def cadastro_service (self, dados : UsuarioCadastro) -> sqlite3.Row:
+    def cadastrar_usuario (self, dados : UsuarioCadastro) -> sqlite3.Row:
         email_existente =self.repositorio.procurar_usuario_pelo_email(dados=dados)
         if email_existente:
             raise EmailJaExiste("Email já cadastrado.")
         senha = criar_hash(dados.senha)
-        usuario_cadastrado = self.repositorio.cria_usuario(entrada_dado=dados, senha_hash=senha)
+        usuario_cadastrado = self.repositorio.criar_usuario(entrada_dado=dados, senha_hash=senha)
         return self.repositorio.procurar_usuario_pelo_id(usuario_cadastrado) #UsuarioResponse aqui
 
-    def validacao_usuario_email (self, dados : UsuarioLogin) -> dict : 
+    def verificar_email_usuario (self, dados : UsuarioLogin) -> dict : 
         dados = self.repositorio.procurar_usuario_pelo_email(dados) # devolve um sqlite3.Row com  dados da tabela usuarios do usuario específico
         if dados is None:
             raise EmailNaoEncontrado("credenciais não compatíveis.")

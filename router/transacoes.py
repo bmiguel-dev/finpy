@@ -10,13 +10,13 @@ router = APIRouter(prefix="/transacoes",tags=['Transações'])
 @router.get("/")
 def listar_transacoes (categorias : list[int] = Query(default=None,title="Categorias ID", alias="cat"),
                        filtro : FiltrarTransacoes = Depends(FiltrarTransacoes), service : ServiceTransacoes = Depends(get_service_transacao), usuario_atual : int = Depends(get_usuario_atual)):
-    dados = service.filtrar_transacoes_id_categorias(categorias=categorias,filtro=filtro,usuario_id=usuario_atual)                                    
+    dados = service.filtrar_transacoes_categorias(categorias=categorias,filtro=filtro,usuario_id=usuario_atual)                                    
     return [ResponseTransacoes(**dict(d)) for d in dados ]
     
 @router.get("/metricas", status_code=200,response_model= ResponseMetricas)
 def exibir_metricas(service  : ServiceTransacoes = Depends(get_service_transacao), usuario_atual : int = Depends(get_usuario_atual)): 
     lista_categorias = service.categorias_e_valores_totais(usuario_atual) # lista com categorias e valores totais
-    metrica = service.saldo_despesa(usuario_atual) # lista com saldo despesa e lucro
+    metrica = service.calcular_saldo_despesa(usuario_atual) # lista com saldo despesa e lucro
     return  ResponseMetricas(categoria_total=lista_categorias,metricas_= metrica)
 
 @router.post("/new",status_code=201,response_model=ResponseTransacoes)
@@ -32,7 +32,7 @@ def transacao_por_id (id_: int, service : ServiceTransacoes = Depends(get_servic
 @router.delete("/{id_}", status_code = 204)
 def deletar_transacoes (id_:int , service : ServiceTransacoes = Depends(get_service_transacao) , usuario_atual : int = Depends(get_usuario_atual)):
     id_confirmado = service.verificar_transacao_id(id_=id_,usuario_id=usuario_atual)
-    service.remove_transacao(id_, usuario_atual)
+    service.remover_transacao(id_, usuario_atual)
     return 
     
 @router.patch("/{id_}", status_code= 200, response_model= ResponseTransacoes)
