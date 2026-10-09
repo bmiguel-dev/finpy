@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import jwt
 from datetime import timedelta, timezone, datetime
-from fastapi import HTTPException, Depends
+from fastapi import  Depends
 from fastapi.security import OAuth2PasswordBearer
 from .erros import TokenSemIdentificacao, TokenInvalido
 

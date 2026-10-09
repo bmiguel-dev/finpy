@@ -34,10 +34,10 @@ def deletar_transacoes (id_:int , service : ServiceTransacoes = Depends(get_serv
     id_confirmado = service.verificar_transacao_id(id_=id_,usuario_id=usuario_atual)
     service.remover_transacao(id_, usuario_atual)
     return 
+
     
 @router.patch("/{id_}", status_code= 200, response_model= ResponseTransacoes)
 def corrigir_transacao (id_:int, dados: CorrigirTransacoes , service : ServiceTransacoes = Depends(get_service_transacao) , usuario_atual : int = Depends(get_usuario_atual)):
     service.verificar_transacao_id(id_=id_, usuario_id=usuario_atual)
     retornar_transacao = service.corrigir_transacao(id_=id_, dados=dados,usuario_id=usuario_atual) 
     return retornar_transacao
-      

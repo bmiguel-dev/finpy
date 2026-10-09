@@ -16,13 +16,14 @@ class ServiceUsuarios:
             raise EmailJaExiste("Email já cadastrado.")
         senha = criar_hash(dados.senha)
         usuario_cadastrado = self.repositorio.criar_usuario(entrada_dado=dados, senha_hash=senha)
+        self.repositorio.conn.commit()
         return self.repositorio.procurar_usuario_pelo_id(usuario_cadastrado) #UsuarioResponse aqui
 
     def verificar_email_usuario (self, dados : UsuarioLogin) -> dict : 
         dados = self.repositorio.procurar_usuario_pelo_email(dados) # devolve um sqlite3.Row com  dados da tabela usuarios do usuario específico
         if dados is None:
             raise EmailNaoEncontrado("credenciais não compatíveis.")
-        return dict(dados)
+        return dados
 
     def verificar_senha_login (self, dados_validados : dict , dados : UsuarioLogin) -> str:
         id_user = dados_validados.get('id')
@@ -30,14 +31,13 @@ class ServiceUsuarios:
         senha_verificada = verifica_senha(senha= dados.senha, senha_hash=senha_hash)
         if not senha_verificada:
             raise SenhaNaoCompativel("credenciais não compatíveis.")
-        return str(id_user) 
+        return str(id_user)
 
     def verificar_usuario_id ( self, id_ : int) -> dict: 
         dados = self.repositorio.procurar_usuario_pelo_id(id_=id_)
         if dados is None:
             raise UsuarioInexistente("Este usuário não existe mais.") 
-        return dict(dados)
-
+        return dados
  
 
 

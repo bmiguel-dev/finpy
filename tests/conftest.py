@@ -1,45 +1,30 @@
 import pytest 
-import sqlite3 
 from fastapi.testclient import TestClient
 from httpx import Response
+import psycopg2
+from psycopg2.extensions import connection
+from psycopg2.extras import RealDictConnection
+from typing import Generator
+from database.database import DataBase
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL_TESTE")
 
 @pytest.fixture(scope="function")
-def bd_teste ():
-    from enums import Categoria
-    conn = sqlite3.connect(":memory:",check_same_thread=False)
-    conn.execute("PRAGMA foreign_keys = ON;")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.executescript(''' CREATE TABLE IF NOT EXISTS usuarios (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                                          nome TEXT UNIQUE NOT NULL,
-                                                                          email TEXT UNIQUE NOT NULL,
-                                                                          senha TEXT NOT NULL,
-                                                                          criacao_login DATETIME DEFAULT CURRENT_TIMESTAMP);
+def bd_teste () -> Generator[RealDictConnection, None, None]:
 
-                            CREATE TABLE IF NOT EXISTS categorias (id INTEGER NOT NULL PRIMARY KEY,
-                                                                        nome TEXT NOT NULL UNIQUE, tipo INTEGER NOT NULL);
-
-
-                            CREATE TABLE IF NOT EXISTS transacoes (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                                        user_id INTEGER,
-                                                                        categoria_id INTEGER,
-                                                                        valor REAL NOT NULL,
-                                                                        descricao TEXT NOT NULL,
-                                                                        data DATE NOT NULL,
-                                                        FOREIGN KEY (categoria_id) REFERENCES categorias(id),
-                                                        FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE);
-
-                                                        CREATE INDEX IF NOT EXISTS idx_transacoes_categoria_id ON transacoes(categoria_id);
-
-                                                        CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes(data);
-
-                                                        CREATE INDEX IF NOT EXISTS idx_transacoes_user_id ON transacoes(user_id)''')
+    db = DataBase(link=DATABASE_URL)
+    db.initiate_table()
     
-    cursor.executemany('''INSERT OR IGNORE INTO categorias (id, nome, tipo) VALUES (?,?,?)''', Categoria.lista_categorias())
-    conn.commit()
+    
+    conn = psycopg2.connect(DATABASE_URL, connection_factory=RealDictConnection)
+    
     try:
         yield conn
     finally:
+        conn.rollback()
         conn.close()
 
 #CLIENT (tem que retornar o yield com Test Client e overrider )
